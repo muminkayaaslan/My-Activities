@@ -18,6 +18,8 @@ interface ActivityDao {
     fun getAll(): Flow<List<ActivityEntity>>
     @Query("DELETE FROM activityentity")
     suspend fun deleteAll()
+    @Query("UPDATE activityentity SET enabled= :newEnableValue WHERE id = :id")
+    suspend fun updateEnable(id: Int?, newEnableValue: Boolean)
 }
 @Entity(tableName = "activityentity")
 data class ActivityEntity(

@@ -19,15 +19,19 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.BottomCenter
+import androidx.compose.ui.Alignment.Companion.BottomEnd
 import androidx.compose.ui.Alignment.Companion.CenterEnd
+import androidx.compose.ui.Alignment.Companion.TopEnd
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -68,46 +72,108 @@ fun App(dao: ActivityDao) {
         //Scaffold ile ekranı hazır bi şekilde sabit yapıları oluşturduk
       Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
           TopAppBar(modifier = Modifier.fillMaxWidth(),title = {
-                      Text("Aktiviteler", textAlign = TextAlign.Center, fontFamily = PixelFontFamily())
+                      Text("Aktiviteler", textAlign = TextAlign.Center, fontFamily = PixelFontFamily(), color = Color.White)
           }, actions = {
               IconButton(onClick = { dialogState.value = true }) {
-                  Icon(Icons.Filled.Notifications, contentDescription = "Notifications")
+                  Icon(Icons.Filled.Notifications, contentDescription = "Notifications",tint = Color.White)
               }
-          }, backgroundColor = Color(182,0,113))
+          }, backgroundColor = Color(57, 26, 120))
 
 
-      }, floatingActionButton = { FloatingActionButton(backgroundColor = Color(228,0,58),shape = RoundedCornerShape(6.dp),onClick = { fieldState.value = true }) {
+      }, floatingActionButton = { FloatingActionButton(backgroundColor = Color(56, 149, 192),shape = RoundedCornerShape(6.dp),onClick = { fieldState.value = true }) {
           Icon(Icons.Filled.Add, contentDescription = "Add")
       }
       }){
-          println(notes)
           //Genel Arayüz
-
-          Column(modifier = Modifier.fillMaxSize()
-              .background(color = Color(26, 33, 48))) {
-
-              Spacer(modifier = Modifier.padding(vertical = 15.dp))
-              val columnSize = remember { mutableStateOf(0) }
-              //Text(getPlatform().name, color = Color.White)
-              if (getPlatform().name == "Android"){
-                  columnSize.value = 2
-              }else if (getPlatform().name == "Desktop"){
-                  columnSize.value = 4
+          if (notes.size == 0){
+              Column(modifier = Modifier.fillMaxSize().background(color = Color(26, 33, 48)), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                  Icon(imageVector = Icons.Filled.Notifications, contentDescription = "Notifications",tint = Color.White)
+                  Text("Henüz not almadınız...",color = Color.White)
               }
-              LazyVerticalStaggeredGrid(modifier = Modifier.padding(10.dp),columns = StaggeredGridCells.Fixed(columnSize.value),
-                  verticalItemSpacing = 30.dp,
-                  horizontalArrangement = Arrangement.spacedBy(15.dp)) {
-                    items(notes.size){ index ->
+          }else{
+              Column(modifier = Modifier.fillMaxSize()
+                  .background(color = Color(26, 33, 48))) {
 
-                        val note = notes[index]
-                        Card(modifier = Modifier.size(RandomDp()), backgroundColor = RandomColor()) {
-                            Text("${note.note}", textAlign = TextAlign.Center, fontFamily = PixelFontFamily())
-                        }
+                  Spacer(modifier = Modifier.padding(vertical = 15.dp))
+                  val columnSize = remember { mutableStateOf(0) }
+                  //Text(getPlatform().name, color = Color.White)
+                  if (getPlatform().name == "Android"){
+                      columnSize.value = 2
+                  }else if (getPlatform().name == "Desktop"){
+                      columnSize.value = 4
+                  }
+                  LazyVerticalStaggeredGrid(modifier = Modifier.padding(10.dp),columns = StaggeredGridCells.Fixed(columnSize.value),
+                      verticalItemSpacing = 30.dp,
+                      horizontalArrangement = Arrangement.spacedBy(15.dp)) {
+                      items(notes.size){ index ->
 
-                    }
-            }
+                          val note = notes[index]
+                          val enabled = remember { mutableStateOf(false) }
+                          val noteField = remember { mutableStateOf(false) }
+                          enabled.value = note.enabled
+                          Card(modifier = Modifier.width(RandomDp(index)).height(RandomHeight(index)).clickable { noteField.value = true }, backgroundColor = RandomColor(index)) {
+                                  if (note.enabled){
+                                      Row (modifier = Modifier.fillMaxSize().padding(start= 2.dp, top=2.dp,end = 15.dp)){
+                                          Text("${note.note}", textAlign = TextAlign.Center, fontFamily = PixelFontFamily(), textDecoration = TextDecoration.LineThrough)
 
+
+
+                                      }
+                                      Box(contentAlignment = TopEnd){
+                                          Checkbox(checked = enabled.value, onCheckedChange = {
+                                              enabled.value = it
+                                              scope.launch {
+                                                  dao.updateEnable(note.id,enabled.value)
+                                              }
+                                          })
+
+                                      }
+                                  }else{
+                                      Row (modifier = Modifier.fillMaxSize().padding(start= 2.dp, top=2.dp,end = 15.dp)){
+                                          Text("${note.note}", textAlign = TextAlign.Center, fontFamily = PixelFontFamily())
+
+                                      }
+                                      Box(contentAlignment = TopEnd) {
+                                          Checkbox(checked = enabled.value, onCheckedChange = {
+                                              enabled.value = it
+                                              scope.launch {
+                                                  dao.updateEnable(note.id,enabled.value)
+                                              }
+                                          })
+                                      }
+                                  }
+                              val (dateV,timeV) = note.date.split("/")
+                              Box(contentAlignment = BottomEnd){
+                                  Column {
+                                      Text(dateV, fontFamily = PixelFontFamily())
+                                      Text(timeV,fontFamily = PixelFontFamily())
+
+                                  }
+
+                              }
+
+                          }
+
+                          if (noteField.value){
+                              Dialog(onDismissRequest = { noteField.value = false }) {
+                                  Card(modifier = Modifier.width(500.dp).height(300.dp), backgroundColor = RandomColor(index)) {
+                                      Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                                          Box(modifier = Modifier.fillMaxSize(0.50f)){
+                                              Text(note.note, fontFamily = PixelFontFamily())
+                                          }
+
+                                      }
+                                  }
+                              }
+                          }
+
+                      }
+                  }
+
+              }
           }
+
+
       }
 
         //Not aldığımız kısım
@@ -126,19 +192,19 @@ fun App(dao: ActivityDao) {
                                 .clickable{textFieldFocused.value = true
                                     focusRequester.requestFocus()
                                 },
-                            backgroundColor =  Color(182,0,113)) {
+                            backgroundColor =  Color(57, 26, 120)) {
                             Column(modifier = Modifier.fillMaxSize()) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     IconButton(onClick = { fieldState.value = !fieldState.value }) {
-                                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = Color.White)
                                     }
                                     Spacer(modifier = Modifier.padding(horizontal = 15.dp))
 
-                                        Text("Not Ekle (Çift tıkla)", fontSize = 15.sp, fontFamily = PixelFontFamily())
+                                        Text("Not Ekle (Çift tıkla)", fontSize = 15.sp, fontFamily = PixelFontFamily(), color = Color.White)
 
                                     Box (modifier = Modifier.fillMaxWidth(),contentAlignment = CenterEnd){
                                         TextButton(onClick = {
-                                            if (note.value.trim().isNotEmpty()&& selectedDate != null){
+                                            if (note.value.trim().isNotEmpty()&& date.value.isNotEmpty() && time.value.isNotEmpty()){
                                                 scope.launch {
                                                     dao.insert(ActivityEntity(
                                                         note = note.value.trim(),
@@ -159,7 +225,7 @@ fun App(dao: ActivityDao) {
 
                                             }
                                             }) {
-                                            Text("Kaydet", fontFamily = PixelFontFamily(), fontWeight = FontWeight.Bold,color = Color.Black)
+                                            Text("Kaydet", fontFamily = PixelFontFamily(), fontWeight = FontWeight.Bold,color = Color.White)
                                         }
                                     }
 
@@ -175,9 +241,11 @@ fun App(dao: ActivityDao) {
                                         maxLines = 7,
                                         minLines = 7,
                                         textStyle = TextStyle(
-                                            fontFamily = PixelFontFamily()
+                                            fontFamily = PixelFontFamily(),
+                                            color = Color.White,
                                         ),
-                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                                        cursorBrush = SolidColor(Color.White),
                                     )
 
                                 }
@@ -185,11 +253,11 @@ fun App(dao: ActivityDao) {
                                 Row(modifier = Modifier.fillMaxWidth().weight(1f), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.Bottom) {
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                         if (date.value.isNotEmpty() && time.value.isNotEmpty()){
-                                            Text("${date.value} - ${time.value}", fontFamily = PixelFontFamily())
+                                            Text("${date.value} - ${time.value}", fontFamily = PixelFontFamily(), color = Color.White)
                                         }
                                         Button(onClick = {showDatePicker = true},
-                                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(228,0,58) ),){
-                                            Text("Tarih Ekle", fontFamily = PixelFontFamily())
+                                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(56, 149, 192) )){
+                                            Text("Tarih Ekle", fontFamily = PixelFontFamily(), color = Color.White)
                                         }
                                     }
 
@@ -202,8 +270,8 @@ fun App(dao: ActivityDao) {
                             SnackbarHost(hostState = snackbarHostState){data ->
                                 Snackbar( modifier = Modifier.width(730.dp)
                                     ,snackbarData = data,
-                                    contentColor = Color.Black,
-                                    backgroundColor = Color(182,0,113))
+                                    contentColor = Color.White,
+                                    backgroundColor = Color(57, 26, 120))
 
                             }
                         }
@@ -225,13 +293,13 @@ fun App(dao: ActivityDao) {
         }
         if (showDatePicker){
             WheelDateTimePickerView(modifier = Modifier.padding(top = 16.dp, bottom = 18.dp).fillMaxWidth(),
-                containerColor = Color(26, 33, 48) ,
+                containerColor = Color(57, 26, 120) ,
                 showDatePicker = showDatePicker,
-                titleStyle = TextStyle(color = Color(182,0,113),
+                titleStyle = TextStyle(color = Color.White,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = PixelFontFamily()),
-                doneLabelStyle = TextStyle(color = Color(0, 151, 178),
+                doneLabelStyle = TextStyle(color = Color.White,
                     fontSize = 14.sp,
                     fontWeight = FontWeight(600),
                     fontFamily = PixelFontFamily()
@@ -240,9 +308,9 @@ fun App(dao: ActivityDao) {
                 doneLabel = "Kaydet",
                 dateTextStyle = TextStyle(color = Color.White,
                     fontFamily = PixelFontFamily()),
-                    dateTextColor = Color(182,0,113),
+                    dateTextColor = Color(56, 149, 192),
                     selectorProperties = WheelPickerDefaults.selectorProperties(
-                    borderColor = Color(182,0,113)
+                    borderColor = Color(56, 149, 192)
                 ),
                 title = title.value,
                 timeFormat = TimeFormat.HOUR_24,
@@ -279,10 +347,33 @@ fun App(dao: ActivityDao) {
 
     }
 }
-
-fun RandomDp(): Dp {
-    return (Random.nextInt(50,150)).dp
+val sizeList: List<Dp> = listOf(
+    80.dp,
+    100.dp,
+    130.dp,
+    110.dp,
+    120.dp
+)
+val heightList: List<Dp> = listOf(
+    120.dp,
+    140.dp,
+    170.dp,
+    150.dp,
+    160.dp
+)
+val colorList: List<Color> = listOf(
+    Color(159, 213, 179),
+    Color(126, 162, 198),
+    Color(251, 160, 172),
+    Color(231, 185, 107),
+)
+fun RandomDp(index: Int): Dp {
+    return sizeList[index % sizeList.size]
 }
-fun RandomColor(): Color {
-    return Color(Random.nextInt(256), Random.nextInt(256), Random.nextInt(256))
+fun RandomHeight(index: Int): Dp{
+    return heightList[index % heightList.size]
+}
+fun RandomColor(index: Int): Color {
+
+    return colorList[index % colorList.size]
 }
