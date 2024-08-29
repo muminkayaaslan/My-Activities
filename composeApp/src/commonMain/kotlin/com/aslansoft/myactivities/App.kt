@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
+import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -20,7 +21,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.BottomCenter
 import androidx.compose.ui.Alignment.Companion.BottomEnd
+import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterEnd
+import androidx.compose.ui.Alignment.Companion.CenterStart
 import androidx.compose.ui.Alignment.Companion.TopEnd
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -68,6 +71,8 @@ fun App(dao: ActivityDao) {
         val date = remember { mutableStateOf("") }
         val  time =remember { mutableStateOf("") }
         val snackbarHostState = remember { SnackbarHostState() }
+        val type = remember { mutableStateOf("Reminder") }
+
 
         //Scaffold ile ekranı hazır bi şekilde sabit yapıları oluşturduk
       Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
@@ -204,20 +209,26 @@ fun App(dao: ActivityDao) {
 
                                     Box (modifier = Modifier.fillMaxWidth(),contentAlignment = CenterEnd){
                                         TextButton(onClick = {
-                                            if (note.value.trim().isNotEmpty()&& date.value.isNotEmpty() && time.value.isNotEmpty()){
+                                            if (note.value.trim().isNotEmpty()&& date.value.isNotEmpty() && time.value.isNotEmpty()&& note.value.length <= 40&& type.value.isNotEmpty() ){
                                                 scope.launch {
                                                     dao.insert(ActivityEntity(
                                                         note = note.value.trim(),
                                                         date = "${date.value}/${time.value}",
                                                         enabled = false,
-                                                        type = "reminder"
+                                                        type = type.value
                                                     ))
                                                     //dao.deleteAll()
                                                     note.value = ""
                                                     date.value = ""
                                                     time.value = ""
+                                                    type.value = ""
                                                 }
                                                 fieldState.value = !fieldState.value
+                                            }else if(note.value.length > 40) {
+                                                scope.launch {
+                                                    snackbarHostState.showSnackbar("Notunuz 40 karakter uzunluğunda olmalıdır...")
+                                                }
+
                                             }else{
                                                scope.launch {
                                                 snackbarHostState.showSnackbar("Lütfen tüm alanları doldur")
@@ -236,7 +247,9 @@ fun App(dao: ActivityDao) {
                                     BasicTextField(modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 20.dp)
                                         .focusRequester(focusRequester),
                                         value = note.value,
-                                        onValueChange = { note.value = it },
+                                        onValueChange = {
+                                                note.value = it
+                                             },
                                         enabled = textFieldFocused.value,
                                         maxLines = 7,
                                         minLines = 7,
@@ -262,6 +275,37 @@ fun App(dao: ActivityDao) {
                                     }
 
                                 }
+                                Spacer(modifier = Modifier.padding(vertical = 5.dp))
+                                Divider(thickness = 1.dp, color = Color.White)
+
+
+
+                                    val tabs = listOf("Hatırlatıcı", "Aktivite",)
+                                    var selectedTabIndex by remember { mutableStateOf(0) }
+                                    TabRow(backgroundColor = Color(57, 26, 120),
+                                        contentColor = Color.White,
+                                        selectedTabIndex = selectedTabIndex,
+                                        indicator = { tabPositions ->
+                                            TabRowDefaults.Indicator(
+                                                Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex])
+                                            )
+                                        }
+                                    ) {
+                                        tabs.forEachIndexed { index, title ->
+                                            Tab(
+                                                selected = selectedTabIndex == index,
+                                                onClick = { selectedTabIndex = index
+
+                                                            if (title == "Hatırlatıcı"){
+                                                                type.value = "Reminder"
+                                                            }else if (title == "Aktivite"){
+                                                                type.value = "TodoList"
+                                                            }
+                                                            },
+                                                text = { Text(text = title,fontFamily = PixelFontFamily()) },
+                                            )
+                                        }
+                                    }
                             }
 
 

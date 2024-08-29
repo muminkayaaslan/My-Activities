@@ -1,7 +1,6 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.resolve.multiplatform.allModulesProvidingExpectsFor
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -114,13 +113,13 @@ compose.desktop {
             vendor = "Aslan SOFTWARE STUDIO"
             copyright = "© 2024 Aslan SOFTWARE STUDIO. All rights reserved."
             windows{
-                iconFile.set(project.file("composeApp/src/commonMain/composeResources/drawable/my_activity_logo_win.ico"))
+                iconFile.set(project.file("my_activity_logo_win.ico"))
             }
             linux{
-                iconFile.set(project.file("composeApp/src/commonMain/composeResources/drawable/my_activity_logo.png"))
+                iconFile.set(project.file("my_activity_logo.png"))
             }
             macOS{
-                iconFile.set(project.file("composeApp/src/commonMain/composeResources/drawable/my_activity_logo_mac.icns"))
+                iconFile.set(project.file("my_activity_logo_mac.icns"))
             }
         }
     }
