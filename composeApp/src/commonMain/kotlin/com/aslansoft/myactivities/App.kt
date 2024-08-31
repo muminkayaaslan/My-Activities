@@ -73,7 +73,6 @@ fun App(dao: ActivityDao) {
         val snackbarHostState = remember { SnackbarHostState() }
         val type = remember { mutableStateOf("Reminder") }
 
-
         //Scaffold ile ekranı hazır bi şekilde sabit yapıları oluşturduk
       Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
           TopAppBar(modifier = Modifier.fillMaxWidth(),title = {
@@ -111,12 +110,22 @@ fun App(dao: ActivityDao) {
                       verticalItemSpacing = 30.dp,
                       horizontalArrangement = Arrangement.spacedBy(15.dp)) {
                       items(notes.size){ index ->
+                          var expandedMenu by remember { mutableStateOf(false) }
 
                           val note = notes[index]
                           val enabled = remember { mutableStateOf(false) }
                           val noteField = remember { mutableStateOf(false) }
                           enabled.value = note.enabled
-                          Card(modifier = Modifier.width(RandomDp(index)).height(RandomHeight(index)).clickable { noteField.value = true }, backgroundColor = RandomColor(index)) {
+                          Card(modifier = Modifier.width(RandomDp(index)).height(RandomHeight(index)).clickable {
+                              noteField.value = true
+                          }
+                              .then(gestureDetect(onAction = {expandedMenu = true}, secondAction = {noteField.value = true})), backgroundColor = RandomColor(index)) {
+                              if (expandedMenu){
+                                  DropdownMenu(expandedMenu, onDismissRequest = {expandedMenu = false}) {
+                                      DropdownMenuItem(onClick = {}){ Text("Sil") }
+                                      DropdownMenuItem(onClick = {}){ Text("Düzenle") }
+                                  }
+                              }
                                   if (note.enabled){
                                       Row (modifier = Modifier.fillMaxSize().padding(start= 2.dp, top=2.dp,end = 15.dp)){
                                           Text("${note.note}", textAlign = TextAlign.Center, fontFamily = PixelFontFamily(), textDecoration = TextDecoration.LineThrough)
