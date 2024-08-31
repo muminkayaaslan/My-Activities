@@ -198,7 +198,11 @@ fun App(dao: ActivityDao) {
                                   Card(modifier = Modifier.width(500.dp).height(300.dp), backgroundColor = RandomColor(index)) {
                                       Column(modifier = Modifier.fillMaxSize().padding(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                                             Row(modifier = Modifier.fillMaxWidth()) {
-                                                Text(note.type,fontFamily = PixelFontFamily(), fontSize = 25.sp)
+                                                if (note.type == "Reminder"){
+                                                    Text("Hatırlatıcı",fontFamily = PixelFontFamily(), fontSize = 25.sp)
+                                                }else{
+                                                    Text("Aktivite",fontFamily = PixelFontFamily(), fontSize = 25.sp)
+                                                }
                                             }
                                           Divider(thickness = 1.dp, color = Color.Black)
                                           Row(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.9f)) {
