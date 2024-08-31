@@ -115,8 +115,13 @@ fun App(dao: ActivityDao) {
 
                               if (expandedMenu){
                                   DropdownMenu(expandedMenu, onDismissRequest = {expandedMenu = false}) {
-                                      DropdownMenuItem(onClick = {}){ Text("Sil") }
-                                      DropdownMenuItem(onClick = {}){ Text("Düzenle") }
+                                      DropdownMenuItem(onClick = {
+                                          scope.launch {
+                                              note.id?.let { it1 -> dao.deleteById(it1) }
+                                          }
+                                          expandedMenu = false
+                                      }){ Text("Sil") }
+
                                   }
                               }
                               Box(modifier = Modifier.fillMaxSize().padding(4.dp)){
@@ -160,28 +165,49 @@ fun App(dao: ActivityDao) {
                                       }
 
                                   }
-                              }
 
-                              val (dateV,timeV) = note.date.split("/")
-                              Box(contentAlignment = BottomEnd){
-                                  Column {
-                                      Text(dateV, fontFamily = PixelFontFamily())
-                                      Text(timeV,fontFamily = PixelFontFamily())
+                                  val (dateV,timeV) = note.date.split("/")
+                                  if (getPlatform().name == "Desktop"){
+                                      Box(modifier = Modifier.fillMaxSize(),contentAlignment = BottomEnd){
+                                          Column(modifier = Modifier.fillMaxWidth(0.25f).fillMaxHeight(0.4f)) {
+                                              Text(dateV, fontFamily = PixelFontFamily(), fontSize = 15.sp)
+                                              Text(timeV,fontFamily = PixelFontFamily(), fontSize = 15.sp)
 
+                                          }
+
+                                      }
+                                  }else{
+                                      Box(modifier = Modifier.fillMaxSize(),contentAlignment = BottomEnd){
+                                          Column(modifier = Modifier.fillMaxWidth(0.33f).fillMaxHeight(0.4f)) {
+                                              Text(dateV, fontFamily = PixelFontFamily(), fontSize = 10.sp)
+                                              Text(timeV,fontFamily = PixelFontFamily(), fontSize = 10.sp)
+
+                                          }
+
+                                      }
                                   }
 
                               }
+
+
 
                           }
 
                           if (noteField.value){
                               Dialog(onDismissRequest = { noteField.value = false }) {
                                   Card(modifier = Modifier.width(500.dp).height(300.dp), backgroundColor = RandomColor(index)) {
-                                      Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                                          Box(modifier = Modifier.fillMaxSize(0.50f)){
+                                      Column(modifier = Modifier.fillMaxSize().padding(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                            Row(modifier = Modifier.fillMaxWidth()) {
+                                                Text(note.type,fontFamily = PixelFontFamily(), fontSize = 25.sp)
+                                            }
+                                          Divider(thickness = 1.dp, color = Color.Black)
+                                          Row(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.9f)) {
                                               Text(note.note, fontFamily = PixelFontFamily())
                                           }
-
+                                          Divider(thickness = 1.dp, color = Color.Black)
+                                          Row (modifier = Modifier.fillMaxWidth()) {
+                                              Text(note.date, fontFamily = PixelFontFamily(), fontSize = 15.sp)
+                                          }
                                       }
                                   }
                               }
