@@ -32,7 +32,7 @@ kotlin {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation ("com.google.accompanist:accompanist-systemuicontroller:0.35.2-beta")
-
+            implementation ("com.google.accompanist:accompanist-permissions:0.35.2-beta")
 
         }
         commonMain.dependencies {

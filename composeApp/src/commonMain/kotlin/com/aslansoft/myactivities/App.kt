@@ -1,5 +1,7 @@
 package com.aslansoft.myactivities
 
+import NotificationManager
+import ReminderRepo
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -37,22 +39,27 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import chackandshowReminder
 import com.aslansoft.myactivities.Data.ActivityDao
 import com.aslansoft.myactivities.Data.ActivityEntity
 import com.aslansoft.myactivities.classes.PixelFontFamily
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.toJavaLocalDateTime
 import network.chaintech.kmp_date_time_picker.ui.datetimepicker.WheelDateTimePickerView
 import network.chaintech.kmp_date_time_picker.utils.DateTimePickerView
 import network.chaintech.kmp_date_time_picker.utils.TimeFormat
 import network.chaintech.kmp_date_time_picker.utils.WheelPickerDefaults
+import network.chaintech.kmp_date_time_picker.utils.now
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import java.time.LocalDateTime
 
 @Composable
 @Preview
 fun App(dao: ActivityDao) {
+
     MaterialTheme {
+
         val notes by dao.getAll().collectAsState(initial = emptyList())
         val scope = rememberCoroutineScope()
         val dialogState = remember { mutableStateOf(false) }
@@ -82,6 +89,7 @@ fun App(dao: ActivityDao) {
           Icon(Icons.Filled.Add, contentDescription = "Add")
       }
       }){
+          println(LocalDateTime.now().toString())
           //Genel Arayüz
           if (notes.size == 0){
               Column(modifier = Modifier.fillMaxSize().background(color = Color(26, 33, 48)), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
@@ -466,3 +474,5 @@ fun RandomColor(index: Int): Color {
 
     return colorList[index % colorList.size]
 }
+
+

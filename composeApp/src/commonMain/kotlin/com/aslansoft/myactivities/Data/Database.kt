@@ -26,6 +26,9 @@ interface ActivityDao {
 
     @Query("UPDATE activityentity SET enabled= :newEnableValue WHERE id = :id")
     suspend fun updateEnable(id: Int?, newEnableValue: Boolean)
+
+    @Query ("SELECT note FROM activityentity Where type = :type AND date = :date ")
+    suspend fun getReminderNoteByTypeAndDate(type: String,date: String): String?
 }
 @Entity(tableName = "activityentity")
 data class ActivityEntity(
