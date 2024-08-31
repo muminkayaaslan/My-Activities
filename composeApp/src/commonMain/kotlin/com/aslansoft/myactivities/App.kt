@@ -21,9 +21,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.BottomCenter
 import androidx.compose.ui.Alignment.Companion.BottomEnd
-import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterEnd
-import androidx.compose.ui.Alignment.Companion.CenterStart
 import androidx.compose.ui.Alignment.Companion.TopEnd
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -39,12 +37,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.aslansoft.myactivities.Data.ActivityDao
 import com.aslansoft.myactivities.Data.ActivityEntity
 import com.aslansoft.myactivities.classes.PixelFontFamily
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.datetime.toJavaLocalDateTime
 import network.chaintech.kmp_date_time_picker.ui.datetimepicker.WheelDateTimePickerView
@@ -53,7 +48,6 @@ import network.chaintech.kmp_date_time_picker.utils.TimeFormat
 import network.chaintech.kmp_date_time_picker.utils.WheelPickerDefaults
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import java.time.LocalDateTime
-import kotlin.random.Random
 
 @Composable
 @Preview
@@ -116,46 +110,58 @@ fun App(dao: ActivityDao) {
                           val enabled = remember { mutableStateOf(false) }
                           val noteField = remember { mutableStateOf(false) }
                           enabled.value = note.enabled
-                          Card(modifier = Modifier.width(RandomDp(index)).height(RandomHeight(index)).clickable {
-                              noteField.value = true
-                          }
+                          Card(modifier = Modifier.width(RandomDp(index)).height(RandomHeight(index)).clickable { noteField.value = true }
                               .then(gestureDetect(onAction = {expandedMenu = true}, secondAction = {noteField.value = true})), backgroundColor = RandomColor(index)) {
+
                               if (expandedMenu){
                                   DropdownMenu(expandedMenu, onDismissRequest = {expandedMenu = false}) {
                                       DropdownMenuItem(onClick = {}){ Text("Sil") }
                                       DropdownMenuItem(onClick = {}){ Text("Düzenle") }
                                   }
                               }
+                              Box(modifier = Modifier.fillMaxSize().padding(4.dp)){
                                   if (note.enabled){
-                                      Row (modifier = Modifier.fillMaxSize().padding(start= 2.dp, top=2.dp,end = 15.dp)){
-                                          Text("${note.note}", textAlign = TextAlign.Center, fontFamily = PixelFontFamily(), textDecoration = TextDecoration.LineThrough)
+                                          Row(modifier = Modifier.fillMaxSize()) {
+                                              Row (modifier = Modifier.fillMaxWidth(0.75f)){
+                                                  Text("${note.note}", textAlign = TextAlign.Center, fontFamily = PixelFontFamily(), textDecoration = TextDecoration.LineThrough)
 
 
-
-                                      }
-                                      Box(contentAlignment = TopEnd){
-                                          Checkbox(checked = enabled.value, onCheckedChange = {
-                                              enabled.value = it
-                                              scope.launch {
-                                                  dao.updateEnable(note.id,enabled.value)
                                               }
-                                          })
+                                              Box(modifier = Modifier.fillMaxWidth(),contentAlignment = TopEnd){
+                                                  Checkbox(checked = enabled.value, onCheckedChange = {
+                                                      enabled.value = it
+                                                      scope.launch {
+                                                          dao.updateEnable(note.id,enabled.value)
+                                                      }
+                                                  })
 
-                                      }
+                                              }
+                                          }
+
+
+
+
                                   }else{
-                                      Row (modifier = Modifier.fillMaxSize().padding(start= 2.dp, top=2.dp,end = 15.dp)){
-                                          Text("${note.note}", textAlign = TextAlign.Center, fontFamily = PixelFontFamily())
+                                      Row(modifier = Modifier.fillMaxSize()) {
+                                          Row (modifier = Modifier.fillMaxWidth(0.75f)){
+                                              Text("${note.note}", textAlign = TextAlign.Center, fontFamily = PixelFontFamily())
 
+
+                                          }
+                                          Box(modifier = Modifier.fillMaxWidth(),contentAlignment = TopEnd){
+                                              Checkbox(checked = enabled.value, onCheckedChange = {
+                                                  enabled.value = it
+                                                  scope.launch {
+                                                      dao.updateEnable(note.id,enabled.value)
+                                                  }
+                                              })
+
+                                          }
                                       }
-                                      Box(contentAlignment = TopEnd) {
-                                          Checkbox(checked = enabled.value, onCheckedChange = {
-                                              enabled.value = it
-                                              scope.launch {
-                                                  dao.updateEnable(note.id,enabled.value)
-                                              }
-                                          })
-                                      }
+
                                   }
+                              }
+
                               val (dateV,timeV) = note.date.split("/")
                               Box(contentAlignment = BottomEnd){
                                   Column {
