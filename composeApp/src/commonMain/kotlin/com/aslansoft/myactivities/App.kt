@@ -1,7 +1,5 @@
 package com.aslansoft.myactivities
 
-import NotificationManager
-import ReminderRepo
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -39,20 +37,18 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import chackandshowReminder
 import com.aslansoft.myactivities.Data.ActivityDao
 import com.aslansoft.myactivities.Data.ActivityEntity
 import com.aslansoft.myactivities.classes.PixelFontFamily
 import kotlinx.coroutines.launch
-import kotlinx.datetime.LocalDate
 import kotlinx.datetime.toJavaLocalDateTime
 import network.chaintech.kmp_date_time_picker.ui.datetimepicker.WheelDateTimePickerView
 import network.chaintech.kmp_date_time_picker.utils.DateTimePickerView
 import network.chaintech.kmp_date_time_picker.utils.TimeFormat
 import network.chaintech.kmp_date_time_picker.utils.WheelPickerDefaults
-import network.chaintech.kmp_date_time_picker.utils.now
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import java.time.LocalDateTime
+
 
 @Composable
 @Preview
@@ -73,15 +69,19 @@ fun App(dao: ActivityDao) {
         val  time =remember { mutableStateOf("") }
         val snackbarHostState = remember { SnackbarHostState() }
         val type = remember { mutableStateOf("Reminder") }
-
         //Scaffold ile ekranı hazır bi şekilde sabit yapıları oluşturduk
       Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
           TopAppBar(modifier = Modifier.fillMaxWidth(),title = {
                       Text("Aktiviteler", textAlign = TextAlign.Center, fontFamily = PixelFontFamily(), color = Color.White)
-          }, actions = {
-              IconButton(onClick = { dialogState.value = true }) {
+          }, actions = {/*
+              IconButton(onClick = {
+                  scope.launch {
+                      dao.deleteAll()
+                  }
+                   }) {
                   Icon(Icons.Filled.Notifications, contentDescription = "Notifications",tint = Color.White)
               }
+              */
           }, backgroundColor = Color(57, 26, 120))
 
 
@@ -89,7 +89,6 @@ fun App(dao: ActivityDao) {
           Icon(Icons.Filled.Add, contentDescription = "Add")
       }
       }){
-          println(LocalDateTime.now().toString())
           //Genel Arayüz
           if (notes.size == 0){
               Column(modifier = Modifier.fillMaxSize().background(color = Color(26, 33, 48)), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
@@ -173,12 +172,12 @@ fun App(dao: ActivityDao) {
                                       }
 
                                   }
-
-                                  val (dateV,timeV) = note.date.split("/")
+                                    val (dateV,timeV) = note.date.split("T")
+                                  val(year,month,day) = dateV.split("-")
                                   if (getPlatform().name == "Desktop"){
                                       Box(modifier = Modifier.fillMaxSize(),contentAlignment = BottomEnd){
                                           Column(modifier = Modifier.fillMaxWidth(0.25f).fillMaxHeight(0.4f)) {
-                                              Text(dateV, fontFamily = PixelFontFamily(), fontSize = 15.sp)
+                                              Text("${day}.${month}.${year}", fontFamily = PixelFontFamily(), fontSize = 15.sp)
                                               Text(timeV,fontFamily = PixelFontFamily(), fontSize = 15.sp)
 
                                           }
@@ -187,7 +186,8 @@ fun App(dao: ActivityDao) {
                                   }else{
                                       Box(modifier = Modifier.fillMaxSize(),contentAlignment = BottomEnd){
                                           Column(modifier = Modifier.fillMaxWidth(0.33f).fillMaxHeight(0.4f)) {
-                                              Text(dateV, fontFamily = PixelFontFamily(), fontSize = 10.sp)
+
+                                              Text("${day}.${month}.${year}", fontFamily = PixelFontFamily(), fontSize = 10.sp)
                                               Text(timeV,fontFamily = PixelFontFamily(), fontSize = 10.sp)
 
                                           }
@@ -218,7 +218,9 @@ fun App(dao: ActivityDao) {
                                           }
                                           Divider(thickness = 1.dp, color = Color.Black)
                                           Row (modifier = Modifier.fillMaxWidth()) {
-                                              Text(note.date, fontFamily = PixelFontFamily(), fontSize = 15.sp)
+                                              val(dateV,timeV) = note.date.split("T")
+                                              val (year,month,day) = dateV.split("-")
+                                              Text("${day}.${month}.${year}-${timeV}", fontFamily = PixelFontFamily(), fontSize = 15.sp)
                                           }
                                       }
                                   }
@@ -262,19 +264,20 @@ fun App(dao: ActivityDao) {
 
                                     Box (modifier = Modifier.fillMaxWidth(),contentAlignment = CenterEnd){
                                         TextButton(onClick = {
-                                            if (note.value.trim().isNotEmpty()&& date.value.isNotEmpty() && time.value.isNotEmpty()&& note.value.length <= 40&& type.value.isNotEmpty() ){
+                                            if (note.value.trim().isNotEmpty()&& selectedDate != null && note.value.length <= 40&& type.value.isNotEmpty() ){
                                                 scope.launch {
                                                     dao.insert(ActivityEntity(
                                                         note = note.value.trim(),
-                                                        date = "${date.value}/${time.value}",
+                                                        date = selectedDate.toString(),
                                                         enabled = false,
                                                         type = type.value
                                                     ))
-                                                    //dao.deleteAll()
+
+
                                                     note.value = ""
-                                                    date.value = ""
                                                     time.value = ""
                                                     type.value = ""
+                                                    selectedDate = null
                                                 }
                                                 fieldState.value = !fieldState.value
                                             }else if(note.value.length > 40) {
@@ -474,5 +477,3 @@ fun RandomColor(index: Int): Color {
 
     return colorList[index % colorList.size]
 }
-
-

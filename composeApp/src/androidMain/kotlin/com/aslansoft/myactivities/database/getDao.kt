@@ -10,6 +10,7 @@ fun getDao(context: Context): ActivityDao {
     return Room.databaseBuilder<ActivityDatabase>(
         context,
         dbfile.absolutePath
+
     )
         .setDriver(BundledSQLiteDriver())
         .build()

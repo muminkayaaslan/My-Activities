@@ -33,6 +33,9 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation ("com.google.accompanist:accompanist-systemuicontroller:0.35.2-beta")
             implementation ("com.google.accompanist:accompanist-permissions:0.35.2-beta")
+            implementation("androidx.work:work-runtime:2.9.1")
+            implementation(libs.androidx.appcompat)
+
 
         }
         commonMain.dependencies {
@@ -98,6 +101,8 @@ dependencies {
     implementation(libs.androidx.ui.android)
     implementation(libs.androidx.ui.android)
     implementation(libs.androidx.ui.text.android)
+    implementation(libs.androidx.work.runtime.ktx)
+
 }
 
 compose.desktop {
@@ -108,7 +113,7 @@ compose.desktop {
             includeAllModules = true
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb,TargetFormat.Exe)
             packageName = "com.aslansoft.myactivities"
-            description = "My Activities Uygulaması Aslan Software STUDIO ürünüdür."
+            description = "My Activities"
             packageVersion = "1.0.0"
             vendor = "Aslan SOFTWARE STUDIO"
             copyright = "© 2024 Aslan SOFTWARE STUDIO. All rights reserved."

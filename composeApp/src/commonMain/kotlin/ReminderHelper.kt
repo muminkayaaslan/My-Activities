@@ -1,5 +1,3 @@
-import androidx.room.Dao
-import androidx.room.Query
 import com.aslansoft.myactivities.Data.ActivityDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -8,13 +6,12 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toJavaLocalDateTime
 import network.chaintech.kmp_date_time_picker.utils.now
 import java.time.format.DateTimeFormatter
-import javax.management.loading.ClassLoaderRepository
 
 class ReminderRepo(private val activityDao: ActivityDao) {
     suspend fun getReminderForToday(): String?{
-        val currentDate = LocalDateTime.now()
-        val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy/HH:mm")
-        val formattedDate = currentDate.toJavaLocalDateTime().format(formatter)
+        val dateTime = LocalDateTime.now()
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")
+        val formattedDate = dateTime.toJavaLocalDateTime().format(formatter)
         return activityDao.getReminderNoteByTypeAndDate("Reminder", formattedDate)
     }
 }
@@ -27,8 +24,8 @@ fun chackandshowReminder(notificationManager: NotificationManager,reminderRepo: 
     GlobalScope.launch(Dispatchers.IO) {
         val note = reminderRepo.getReminderForToday()
         if (!note.isNullOrEmpty()){
-            val message = "Hatırlatıcı \n ${note} "
-            showReminderNotification(notificationManager, title = "My Activities",message = message)
+            val message = note
+            showReminderNotification(notificationManager, title = "Hatırlatma",message = message)
         }
     }
 }

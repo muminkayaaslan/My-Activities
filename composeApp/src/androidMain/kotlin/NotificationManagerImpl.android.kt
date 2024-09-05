@@ -5,7 +5,7 @@ import androidx.core.app.NotificationCompat
 import com.aslansoft.myactivities.R
 
 actual class NotificationManagerImpl(private val context: Context) : NotificationManager {
-     actual override fun showNotification(title: String, message: String) {
+    actual override fun showNotification(title: String, message: String) {
         val notificationId = 1
         val channelId = "reminder_channel_id"
 
@@ -32,3 +32,4 @@ actual class NotificationManagerImpl(private val context: Context) : Notificatio
         notificationManager.notify(notificationId, notification)
     }
 }
+
