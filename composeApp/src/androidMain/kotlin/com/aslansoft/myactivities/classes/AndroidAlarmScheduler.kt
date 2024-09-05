@@ -7,8 +7,8 @@ import android.content.Intent
 import android.os.Build
 import com.aslansoft.myactivities.MainActivity
 import com.aslansoft.myactivities.database.getDao
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toJavaLocalDateTime
@@ -22,39 +22,34 @@ class AndroidAlarmScheduler (private val context: Context): AlarmScheduler {
     private val alarmManager = context.getSystemService(AlarmManager::class.java)
 
     override fun schedule(item: AlarmItem) {
-
         val intent = Intent(context, AlarmReceiver::class.java).apply {
-            putExtra("Extra message",item.message)
+            putExtra("message", item.message)
         }
-        val localDateTime = LocalDateTime.now()
-        val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy/HH:mm")
-        val formattedDate = localDateTime.toJavaLocalDateTime().format(formatter)
-        val db = getDao(context)
-        GlobalScope.launch(Dispatchers.IO) {
-            db.getReminderNoteByTypeAndDate("Reminder",formattedDate)
-        }
+
         val alarmTimeInMillis = item.time.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            item.hashCode(),
+            intent,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             alarmTimeInMillis,
-            PendingIntent.getBroadcast(
-                context,
-                item.hashCode(),
-                intent,
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
-            )
+            pendingIntent
         )
     }
 
     override fun cancel(item: AlarmItem) {
-        alarmManager.cancel(
-            PendingIntent.getBroadcast(
+        val intent = Intent(context, AlarmReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
             context,
             item.hashCode(),
-            Intent(context, MainActivity::class.java),
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
-        ))
-
+            intent,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        alarmManager.cancel(pendingIntent)
     }
 }

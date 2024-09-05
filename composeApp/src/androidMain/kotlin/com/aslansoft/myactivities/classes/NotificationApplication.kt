@@ -1,5 +1,6 @@
 package com.aslansoft.myactivities.classes
 
+import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.Application
 import android.app.PendingIntent
@@ -8,13 +9,12 @@ import android.content.Intent
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.AlarmManagerCompat
-import androidx.core.content.ContextCompat
 import com.aslansoft.myactivities.database.getDao
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.util.*
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 class NotificationApplication : Application() {
     @RequiresApi(Build.VERSION_CODES.O)
@@ -24,19 +24,21 @@ class NotificationApplication : Application() {
         scheduleNotification()
     }
 
+    @SuppressLint("SuspiciousIndentation")
     @RequiresApi(Build.VERSION_CODES.O)
     fun scheduleNotification() {
-        val dao = getDao(applicationContext)
-        GlobalScope.launch(Dispatchers.IO) {
+
             val datetime = java.time.LocalDateTime.now()
             val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")
             val formattedDate = datetime.format(formatter)
-            val note = dao.getReminderNoteByTypeAndDate("Reminder", formattedDate.toString())
-            note?.let {
+        var note: String? = null
+            CoroutineScope(Dispatchers.IO).launch {
+                note = getDao(applicationContext).getReminderNoteByTypeAndDate("Reminder",formattedDate)
+            }
                 // Alarmı kur
                 val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
                 val intent = Intent(this@NotificationApplication, AlarmReceiver::class.java).apply {
-                    putExtra("message", it)  // Mesajı buraya ekliyoruz
+                    putExtra("message", note)  // Mesajı buraya ekliyoruz
                 }
                 val pendingIntent = PendingIntent.getBroadcast(
                     this@NotificationApplication,
@@ -56,7 +58,7 @@ class NotificationApplication : Application() {
                     triggerTime,
                     pendingIntent
                 )
-            }
-        }
+
+
     }
 }

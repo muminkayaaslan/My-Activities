@@ -25,6 +25,8 @@
             </intent-filter>
         </activity>
         <receiver android:name=".classes.AlarmReceiver"/>
+        <service android:name=".classes.NotificationServices"
+        android:exported="false"/>
     </application>
 
 

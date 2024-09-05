@@ -5,14 +5,16 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import java.time.LocalDateTime
 
 class AlarmReceiver: BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        println("alıcı açıldı")
         Log.d("AlarmReceiver", "Alarm tetiklendi!")
-        // Bildirimi gösterme
+        val notificationMessage = intent.getStringExtra("message") ?: null
+
         val notificationManager = NotificationManagerImpl(context)
-        val notificationMessage = intent.getStringExtra("message") ?: "Hatırlatıcı"
-        notificationManager.showNotification("Hatırlatıcı", notificationMessage)
+        if (notificationMessage != null) {
+            notificationManager.showNotification("Hatırlatıcı", notificationMessage)
+        }
     }
 }
