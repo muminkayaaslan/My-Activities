@@ -8,7 +8,6 @@ import java.io.File
 
 fun getDao(): ActivityDao {
     val dbFile = File(System.getProperty("java.io.tmpdir"),"activities.db")
-    println(dbFile.absolutePath.toString())
     return Room.databaseBuilder<ActivityDatabase>(
         name = dbFile.absolutePath
     )

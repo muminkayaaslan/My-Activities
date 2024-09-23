@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -32,9 +34,12 @@ kotlin {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation ("com.google.accompanist:accompanist-systemuicontroller:0.35.2-beta")
-            implementation ("com.google.accompanist:accompanist-permissions:0.35.2-beta")
-            implementation("androidx.work:work-runtime:2.9.1")
+            implementation (libs.accompanist.permissions)
+            implementation(libs.androidx.work.runtime)
             implementation(libs.androidx.appcompat)
+            implementation(libs.androidx.work.multiprocess)
+            implementation(libs.gson)
+
 
 
         }

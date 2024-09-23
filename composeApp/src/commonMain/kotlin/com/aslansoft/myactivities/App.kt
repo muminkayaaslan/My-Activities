@@ -3,9 +3,9 @@ package com.aslansoft.myactivities
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,12 +22,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.BottomCenter
 import androidx.compose.ui.Alignment.Companion.BottomEnd
 import androidx.compose.ui.Alignment.Companion.CenterEnd
+import androidx.compose.ui.Alignment.Companion.CenterStart
+import androidx.compose.ui.Alignment.Companion.End
 import androidx.compose.ui.Alignment.Companion.TopEnd
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.paint
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -42,12 +47,18 @@ import com.aslansoft.myactivities.Data.ActivityEntity
 import com.aslansoft.myactivities.classes.PixelFontFamily
 import kotlinx.coroutines.launch
 import kotlinx.datetime.toJavaLocalDateTime
+import kotlinx.datetime.toLocalDateTime
+import myactivities.composeapp.generated.resources.Res
+import myactivities.composeapp.generated.resources.background
 import network.chaintech.kmp_date_time_picker.ui.datetimepicker.WheelDateTimePickerView
 import network.chaintech.kmp_date_time_picker.utils.DateTimePickerView
 import network.chaintech.kmp_date_time_picker.utils.TimeFormat
 import network.chaintech.kmp_date_time_picker.utils.WheelPickerDefaults
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 
 @Composable
@@ -58,7 +69,6 @@ fun App(dao: ActivityDao) {
 
         val notes by dao.getAll().collectAsState(initial = emptyList())
         val scope = rememberCoroutineScope()
-        val dialogState = remember { mutableStateOf(false) }
         val fieldState = remember{ mutableStateOf(false) }
         val note = remember { mutableStateOf("") }
         val textFieldFocused = remember { mutableStateOf(false) }
@@ -69,166 +79,244 @@ fun App(dao: ActivityDao) {
         val  time =remember { mutableStateOf("") }
         val snackbarHostState = remember { SnackbarHostState() }
         val type = remember { mutableStateOf("Reminder") }
+        var selectedTabIndexMain by remember { mutableStateOf(0) }
         //Scaffold ile ekranı hazır bi şekilde sabit yapıları oluşturduk
       Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
           TopAppBar(modifier = Modifier.fillMaxWidth(),title = {
                       Text("Aktiviteler", textAlign = TextAlign.Center, fontFamily = PixelFontFamily(), color = Color.White)
-          }, actions = {/*
-              IconButton(onClick = {
-                  scope.launch {
-                      dao.deleteAll()
-                  }
-                   }) {
-                  Icon(Icons.Filled.Notifications, contentDescription = "Notifications",tint = Color.White)
-              }
-              */
           }, backgroundColor = Color(57, 26, 120))
-
-
       }, floatingActionButton = { FloatingActionButton(backgroundColor = Color(56, 149, 192),shape = RoundedCornerShape(6.dp),onClick = { fieldState.value = true }) {
           Icon(Icons.Filled.Add, contentDescription = "Add")
       }
-      }){
+      },
+          bottomBar = {
+              val tabs = listOf("Hatırlatıcılar", "Aktiviteler")
+
+              TabRow(backgroundColor = Color(57, 26, 120),
+                  contentColor = Color.White,
+                  selectedTabIndex = selectedTabIndexMain,
+                  indicator = { tabPositions ->
+                      TabRowDefaults.Indicator(
+                          Modifier.tabIndicatorOffset(tabPositions[selectedTabIndexMain])
+                      )
+                  }
+              ) {
+                  tabs.forEachIndexed { index, title ->
+                      Tab(
+                          selected = selectedTabIndexMain == index,
+                          onClick = { selectedTabIndexMain = index
+
+                              if (title == "Hatırlatıcı"){
+                                  type.value = "Reminder"
+                              }else if (title == "Aktivite"){
+                                  type.value = "TodoList"
+                              }
+                          },
+                          text = { Text(text = title,fontFamily = PixelFontFamily()) },
+                      )
+                  }
+              }
+          }){
           //Genel Arayüz
           if (notes.size == 0){
-              Column(modifier = Modifier.fillMaxSize().background(color = Color(26, 33, 48)), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+              Column(modifier = Modifier.fillMaxSize().paint(painter = painterResource(Res.drawable.background), contentScale = ContentScale.Crop).clickable { fieldState.value = true }, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                   Icon(imageVector = Icons.Filled.Notifications, contentDescription = "Notifications",tint = Color.White)
                   Text("Henüz not almadınız...",color = Color.White)
               }
           }else{
-              Column(modifier = Modifier.fillMaxSize()
-                  .background(color = Color(26, 33, 48))) {
+
+
+              Column(modifier = Modifier.fillMaxSize().paint(painter = painterResource(Res.drawable.background), contentScale = ContentScale.Crop)) {
 
                   Spacer(modifier = Modifier.padding(vertical = 15.dp))
                   val columnSize = remember { mutableStateOf(0) }
-                  //Text(getPlatform().name, color = Color.White)
+
                   if (getPlatform().name == "Android"){
                       columnSize.value = 2
                   }else if (getPlatform().name == "Desktop"){
                       columnSize.value = 4
                   }
-                  LazyVerticalStaggeredGrid(modifier = Modifier.padding(10.dp),columns = StaggeredGridCells.Fixed(columnSize.value),
-                      verticalItemSpacing = 30.dp,
-                      horizontalArrangement = Arrangement.spacedBy(15.dp)) {
-                      items(notes.size){ index ->
-                          var expandedMenu by remember { mutableStateOf(false) }
-
-                          val note = notes[index]
-                          val enabled = remember { mutableStateOf(false) }
-                          val noteField = remember { mutableStateOf(false) }
-                          enabled.value = note.enabled
-                          Card(modifier = Modifier.width(RandomDp(index)).height(RandomHeight(index)).clickable { noteField.value = true }
-                              .then(gestureDetect(onAction = {expandedMenu = true}, secondAction = {noteField.value = true})), backgroundColor = RandomColor(index)) {
-
-                              if (expandedMenu){
-                                  DropdownMenu(expandedMenu, onDismissRequest = {expandedMenu = false}) {
-                                      DropdownMenuItem(onClick = {
-                                          scope.launch {
-                                              note.id?.let { it1 -> dao.deleteById(it1) }
-                                          }
-                                          expandedMenu = false
-                                      }){ Text("Sil") }
-
-                                  }
-                              }
-                              Box(modifier = Modifier.fillMaxSize().padding(4.dp)){
-                                  if (note.enabled){
-                                          Row(modifier = Modifier.fillMaxSize()) {
-                                              Row (modifier = Modifier.fillMaxWidth(0.75f)){
-                                                  Text("${note.note}", textAlign = TextAlign.Center, fontFamily = PixelFontFamily(), textDecoration = TextDecoration.LineThrough)
 
 
-                                              }
-                                              Box(modifier = Modifier.fillMaxWidth(),contentAlignment = TopEnd){
-                                                  Checkbox(checked = enabled.value, onCheckedChange = {
-                                                      enabled.value = it
-                                                      scope.launch {
-                                                          dao.updateEnable(note.id,enabled.value)
-                                                      }
-                                                  })
+                        when(selectedTabIndexMain ){
+                        0 ->
+                            LazyVerticalStaggeredGrid(modifier = Modifier.padding(end = 10.dp, start = 10.dp),columns = StaggeredGridCells.Fixed(columnSize.value),
+                                verticalItemSpacing = 30.dp,
+                                horizontalArrangement = Arrangement.spacedBy(15.dp)) {
+                                items(notes.filter { it.type == "Reminder" }.size){ index ->
+                                    var expandedMenu by remember { mutableStateOf(false) }
 
-                                              }
-                                          }
+                                    val note = notes.filter { it.type == "Reminder" }[index]
+                                    val enabled = remember { mutableStateOf(false) }
+                                    val noteField = remember { mutableStateOf(false) }
+                                    enabled.value = note.enabled
 
+                                    Card(modifier = Modifier.width(RandomDp(index)).height(RandomHeight(index)).clickable { noteField.value = true }
+                                        .then(gestureDetect(onAction = {expandedMenu = true}, secondAction = {noteField.value = true})), backgroundColor = RandomColor(index)) {
 
+                                        if (expandedMenu){
+                                            DropdownMenu(expandedMenu, onDismissRequest = {expandedMenu = false}) {
+                                                DropdownMenuItem(onClick = {
+                                                    scope.launch {
+                                                        note.id?.let { it1 -> dao.deleteById(it1) }
+                                                    }
+                                                    expandedMenu = false
+                                                }){ Text("Sil") }
 
-
-                                  }else{
-                                      Row(modifier = Modifier.fillMaxSize()) {
-                                          Row (modifier = Modifier.fillMaxWidth(0.75f)){
-                                              Text("${note.note}", textAlign = TextAlign.Center, fontFamily = PixelFontFamily())
-
-
-                                          }
-                                          Box(modifier = Modifier.fillMaxWidth(),contentAlignment = TopEnd){
-                                              Checkbox(checked = enabled.value, onCheckedChange = {
-                                                  enabled.value = it
-                                                  scope.launch {
-                                                      dao.updateEnable(note.id,enabled.value)
-                                                  }
-                                              })
-
-                                          }
-                                      }
-
-                                  }
-                                    val (dateV,timeV) = note.date.split("T")
-                                  val(year,month,day) = dateV.split("-")
-                                  if (getPlatform().name == "Desktop"){
-                                      Box(modifier = Modifier.fillMaxSize(),contentAlignment = BottomEnd){
-                                          Column(modifier = Modifier.fillMaxWidth(0.25f).fillMaxHeight(0.4f)) {
-                                              Text("${day}.${month}.${year}", fontFamily = PixelFontFamily(), fontSize = 15.sp)
-                                              Text(timeV,fontFamily = PixelFontFamily(), fontSize = 15.sp)
-
-                                          }
-
-                                      }
-                                  }else{
-                                      Box(modifier = Modifier.fillMaxSize(),contentAlignment = BottomEnd){
-                                          Column(modifier = Modifier.fillMaxWidth(0.33f).fillMaxHeight(0.4f)) {
-
-                                              Text("${day}.${month}.${year}", fontFamily = PixelFontFamily(), fontSize = 10.sp)
-                                              Text(timeV,fontFamily = PixelFontFamily(), fontSize = 10.sp)
-
-                                          }
-
-                                      }
-                                  }
-
-                              }
+                                            }
+                                        }
+                                        Box(modifier = Modifier.fillMaxSize().padding(4.dp)){
+                                            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm").withZone(
+                                                ZoneId.systemDefault())
+                                            val noteDate = LocalDateTime.parse(note.date, formatter)
+                                            val currentDateTime = LocalDateTime.now()
+                                            if (noteDate.isAfter(currentDateTime)) {
+                                                Row(modifier = Modifier.fillMaxSize()) {
+                                                    Row (modifier = Modifier.fillMaxWidth(0.75f)){
+                                                        Text("${note.note}", textAlign = TextAlign.Center, fontFamily = PixelFontFamily())
 
 
+                                                    }
+                                                }
+                                            }else{
+                                                Row(modifier = Modifier.fillMaxSize()) {
+                                                    Row (modifier = Modifier.fillMaxWidth(0.75f)){
+                                                        Text("${note.note}", textAlign = TextAlign.Center, fontFamily = PixelFontFamily(), textDecoration = TextDecoration.LineThrough)
 
-                          }
 
-                          if (noteField.value){
-                              Dialog(onDismissRequest = { noteField.value = false }) {
-                                  Card(modifier = Modifier.width(500.dp).height(300.dp), backgroundColor = RandomColor(index)) {
-                                      Column(modifier = Modifier.fillMaxSize().padding(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                                            Row(modifier = Modifier.fillMaxWidth()) {
-                                                if (note.type == "Reminder"){
-                                                    Text("Hatırlatıcı",fontFamily = PixelFontFamily(), fontSize = 25.sp)
-                                                }else{
-                                                    Text("Aktivite",fontFamily = PixelFontFamily(), fontSize = 25.sp)
+                                                    }
+                                                }
+
+                                            }
+                                            val (dateV,timeV) = note.date.split("T")
+                                            val(year,month,day) = dateV.split("-")
+                                            if (getPlatform().name == "Desktop"){
+                                                Box(modifier = Modifier.fillMaxSize(),contentAlignment = BottomEnd){
+                                                    Column(modifier = Modifier.fillMaxWidth(0.25f).fillMaxHeight(0.4f)) {
+                                                        Text("${day}.${month}.${year}", fontFamily = PixelFontFamily(), fontSize = 15.sp)
+                                                        Text(timeV,fontFamily = PixelFontFamily(), fontSize = 15.sp)
+
+                                                    }
+
+                                                }
+                                            }else{
+                                                Box(modifier = Modifier.fillMaxSize(),contentAlignment = BottomEnd){
+                                                    Column(modifier = Modifier.fillMaxWidth(0.33f).fillMaxHeight(0.4f)) {
+
+                                                        Text("${day}.${month}.${year}", fontFamily = PixelFontFamily(), fontSize = 10.sp)
+                                                        Text(timeV,fontFamily = PixelFontFamily(), fontSize = 10.sp)
+
+                                                    }
+
                                                 }
                                             }
-                                          Divider(thickness = 1.dp, color = Color.Black)
-                                          Row(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.9f)) {
-                                              Text(note.note, fontFamily = PixelFontFamily())
-                                          }
-                                          Divider(thickness = 1.dp, color = Color.Black)
-                                          Row (modifier = Modifier.fillMaxWidth()) {
-                                              val(dateV,timeV) = note.date.split("T")
-                                              val (year,month,day) = dateV.split("-")
-                                              Text("${day}.${month}.${year}-${timeV}", fontFamily = PixelFontFamily(), fontSize = 15.sp)
-                                          }
-                                      }
-                                  }
-                              }
-                          }
 
-                      }
-                  }
+                                        }
+
+
+
+                                    }
+
+                                    if (noteField.value){
+                                        Dialog(onDismissRequest = { noteField.value = false }) {
+                                            Card(modifier = Modifier.width(500.dp).height(300.dp), backgroundColor = RandomColor(index)) {
+                                                Column(modifier = Modifier.fillMaxSize().padding(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                                    Row(modifier = Modifier.fillMaxWidth()) {
+                                                        if (note.type == "Reminder"){
+                                                            Text("Hatırlatıcı",fontFamily = PixelFontFamily(), fontSize = 25.sp)
+                                                        }else{
+                                                            Text("Aktivite",fontFamily = PixelFontFamily(), fontSize = 25.sp)
+                                                        }
+                                                    }
+                                                    Divider(thickness = 1.dp, color = Color.Black)
+                                                    Row(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.9f)) {
+                                                        Text(note.note, fontFamily = PixelFontFamily())
+                                                    }
+                                                    Divider(thickness = 1.dp, color = Color.Black)
+                                                    Row (modifier = Modifier.fillMaxWidth()) {
+                                                        val(dateV,timeV) = note.date.split("T")
+                                                        val (year,month,day) = dateV.split("-")
+                                                        Text("${day}.${month}.${year}-${timeV}", fontFamily = PixelFontFamily(), fontSize = 15.sp)
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                }
+                            }
+                            //Todolist Kısmı
+                            1 ->
+                                LazyColumn {
+                                    items(notes.filter { it.type == "TodoList" }.size){ index ->
+                                        val note = notes.filter { it.type == "TodoList" }[index]
+                                        var expandedMenu by remember { mutableStateOf(false) }
+                                        var cardHeight by remember { mutableStateOf(0) }
+                                        var enabled by remember { mutableStateOf(false) }
+
+                                        if(getPlatform().name == "Desktop"){
+                                            cardHeight = 130
+                                        }else{
+                                            cardHeight = 70
+                                        }
+                                            Card(modifier = Modifier.fillMaxWidth().height(cardHeight.dp).padding(start = 4.dp, end = 4.dp).then(gestureDetect(onAction = {expandedMenu = true}, secondAction = {})), backgroundColor = RandomColor(index)) {
+                                                Column (modifier = Modifier.fillMaxSize().padding(start = 2.dp, end = 2.dp), verticalArrangement = Arrangement.Center){
+
+                                                        Row(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.4f)
+                                                        , horizontalArrangement = Arrangement.SpaceBetween,
+                                                            verticalAlignment = Alignment.CenterVertically) {
+                                                            Box(modifier = Modifier.weight(1f),contentAlignment = CenterStart) {
+                                                                if (note.enabled){
+                                                                    Text(note.note, fontFamily = PixelFontFamily(), fontSize = 15.sp, textDecoration = TextDecoration.LineThrough)
+
+                                                                }else{
+                                                                    Text(note.note, fontFamily = PixelFontFamily(), fontSize = 15.sp)
+                                                                }
+                                                            }
+                                                            enabled = note.enabled
+                                                            Box(contentAlignment = CenterEnd){
+                                                                Checkbox(checked = enabled, onCheckedChange = {
+
+                                                                    enabled = it
+                                                                    scope.launch {
+                                                                        dao.updateEnable(note.id,enabled)
+                                                                    }
+                                                                })
+                                                            }
+                                                        }
+
+                                                    val (date,time) = note.date.split("T")
+                                                    val (year,month,day) = date.split("-")
+                                                    Spacer(modifier = Modifier.padding(3.dp))
+                                                    Row(modifier = Modifier.fillMaxWidth().weight(1f).padding(end = 2.dp)) {
+                                                        Text("${day}.${month}.${year}", fontFamily = PixelFontFamily(), fontSize = 15.sp)
+                                                        Spacer(modifier = Modifier.weight(1f))
+                                                        Text(time,fontFamily = PixelFontFamily(), fontSize = 15.sp)
+                                                    }
+
+                                                }
+                                            }
+
+
+                                        Spacer(modifier = Modifier.padding(vertical = 5.dp))
+
+
+
+                                        if (expandedMenu){
+                                            DropdownMenu(expandedMenu, onDismissRequest = {expandedMenu = false}) {
+                                                DropdownMenuItem(onClick = {
+                                                    scope.launch {
+                                                    note.id?.let { it1 -> dao.deleteById(it1) }
+                                                }
+                                                expandedMenu = false}){
+                                                    Text("Sil",fontFamily = PixelFontFamily())
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                        }
+
 
               }
           }
@@ -477,3 +565,7 @@ fun RandomColor(index: Int): Color {
 
     return colorList[index % colorList.size]
 }
+
+
+
+

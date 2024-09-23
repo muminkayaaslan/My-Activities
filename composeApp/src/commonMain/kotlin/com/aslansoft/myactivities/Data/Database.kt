@@ -26,6 +26,12 @@ interface ActivityDao {
 
     @Query ("SELECT note FROM activityentity Where type = :type AND date = :date ")
     suspend fun getReminderNoteByTypeAndDate(type: String,date: String): String?
+
+
+        @Query("Select * FROM activityentity WHERE SUBSTR(date,1,10) = :date AND type = :type")
+        suspend fun getReminderbyLocalDate(date: String,type: String): List<ActivityEntity?>
+
+
 }
 @Entity(tableName = "activityentity")
 data class ActivityEntity(
