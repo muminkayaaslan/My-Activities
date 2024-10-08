@@ -2,17 +2,14 @@
 
 package com.aslansoft.myactivities
 
-import android.app.AlarmManager
-import android.content.Context
-import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
@@ -27,65 +24,41 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.work.*
+import androidx.lifecycle.lifecycleScope
 import com.aslansoft.myactivities.classes.*
 import com.aslansoft.myactivities.database.getDao
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import java.time.Duration
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.launch
 
 
 @Suppress("DEPRECATION")
 class MainActivity : ComponentActivity() {
-
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
-        setAlarmsForAllReminder(this)
-        val constraints = Constraints.Builder()
-            .setRequiresDeviceIdle(false)
-            .setRequiresCharging(false)
-            .setRequiresBatteryNotLow(false)
-            .setRequiresStorageNotLow(false)
-            .setRequiresCharging(false)
-            .build()
+        this.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        if (ContextCompat.checkSelfPermission(this,android.Manifest.permission.FOREGROUND_SERVICE)!=PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this,arrayOf(android.Manifest.permission.FOREGROUND_SERVICE),1)
+        }
 
-        val workRequest = PeriodicWorkRequest.Builder(
-            saveReminderWorker::class.java,
-            1,
-            TimeUnit.HOURS)
-            .setConstraints(constraints)
-            .build()
-        //pref yazdırma
-        WorkManager
-            .getInstance(this)
-            .enqueueUniquePeriodicWork("Save Reminder",
-                ExistingPeriodicWorkPolicy.KEEP,
-                workRequest)
-            .result
-            .addListener({
-                Log.d("Activity Work Manager Test","Work sıraya alındı")
-            },Executors.newSingleThreadExecutor())
-        //pref silme
-        scheduleClearSharedPref(this)
         //db
         val dao = getDao(this)
-        //alarm kontrol
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val alarmManager = ContextCompat.getSystemService(this, AlarmManager::class.java)
-            if (alarmManager?.canScheduleExactAlarms() == false) {
-                Intent().also { intent ->
-                    intent.action = Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM
-                    this@MainActivity.startActivity(intent)
+
+
+        lifecycleScope.launch {
+            val nextReminder = getNextReminder(context = this@MainActivity)
+            Log.d("RoomDb & Alarm","Bir sonraki alarm için tarih ${nextReminder?.date}")
+            nextReminder.let {
+                if (it != null) {
+                    setAlarm(applicationContext,it)
                 }
             }
         }
-
 
         setContent {
             val controller = rememberSystemUiController()
@@ -119,37 +92,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
-
-
-fun scheduleClearSharedPref(context: Context){
-    val now = java.time.LocalTime.now()
-    val endOfDay = java.time.LocalTime.of(23,59)
-    val durationUntil = Duration.between(now, endOfDay)
-    val constraints = Constraints.Builder()
-        .setRequiresDeviceIdle(false)
-        .setRequiresCharging(false)
-        .setRequiresBatteryNotLow(false)
-        .setRequiresStorageNotLow(false)
-        .setRequiresCharging(false)
-        .build()
-
-    val delay = if ( durationUntil.isNegative) {
-        Duration.ofHours(24).minus(durationUntil.abs())
-
-    }else{
-        durationUntil
-    }
-
-    val clearPreferencesRequest: WorkRequest = PeriodicWorkRequest.Builder(
-        ClearReminderWorker::class.java,
-        24,
-        TimeUnit.HOURS
-
-    ).setConstraints(constraints)
-        .setInitialDelay(delay.toMillis(), TimeUnit.SECONDS)
-        .build()
-
-    WorkManager.getInstance(context).enqueue(clearPreferencesRequest)
-}
-

@@ -23,8 +23,6 @@ import androidx.compose.ui.Alignment.Companion.BottomCenter
 import androidx.compose.ui.Alignment.Companion.BottomEnd
 import androidx.compose.ui.Alignment.Companion.CenterEnd
 import androidx.compose.ui.Alignment.Companion.CenterStart
-import androidx.compose.ui.Alignment.Companion.End
-import androidx.compose.ui.Alignment.Companion.TopEnd
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.focus.FocusRequester
@@ -32,7 +30,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -47,7 +44,6 @@ import com.aslansoft.myactivities.Data.ActivityEntity
 import com.aslansoft.myactivities.classes.PixelFontFamily
 import kotlinx.coroutines.launch
 import kotlinx.datetime.toJavaLocalDateTime
-import kotlinx.datetime.toLocalDateTime
 import myactivities.composeapp.generated.resources.Res
 import myactivities.composeapp.generated.resources.background
 import network.chaintech.kmp_date_time_picker.ui.datetimepicker.WheelDateTimePickerView
@@ -116,19 +112,28 @@ fun App(dao: ActivityDao) {
                       )
                   }
               }
-          }){
+          }){ innerPadding ->
           //Genel Arayüz
           if (notes.size == 0){
-              Column(modifier = Modifier.fillMaxSize().paint(painter = painterResource(Res.drawable.background), contentScale = ContentScale.Crop).clickable { fieldState.value = true }, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                  Icon(imageVector = Icons.Filled.Notifications, contentDescription = "Notifications",tint = Color.White)
-                  Text("Henüz not almadınız...",color = Color.White)
+              Column(modifier = Modifier.fillMaxSize()
+                  .paint(painter = painterResource(Res.drawable.background),
+                      contentScale = ContentScale.Crop).clickable { fieldState.value = true },
+                  horizontalAlignment = Alignment.CenterHorizontally,
+                  verticalArrangement = Arrangement.Center) {
+                  Icon(imageVector = Icons.Filled.Notifications,
+                      contentDescription = "Notifications",
+                      tint = Color.White)
+
+                  Text("Henüz not almadınız...",
+                      color = Color.White)
               }
           }else{
 
 
-              Column(modifier = Modifier.fillMaxSize().paint(painter = painterResource(Res.drawable.background), contentScale = ContentScale.Crop)) {
-
-                  Spacer(modifier = Modifier.padding(vertical = 15.dp))
+              Column(modifier = Modifier.fillMaxSize().padding(innerPadding)
+                  .paint(painter = painterResource(Res.drawable.background),
+                      contentScale = ContentScale.Crop)) {
+                    Spacer(modifier = Modifier.padding(3.dp))
                   val columnSize = remember { mutableStateOf(0) }
 
                   if (getPlatform().name == "Android"){
@@ -170,23 +175,35 @@ fun App(dao: ActivityDao) {
                                                 ZoneId.systemDefault())
                                             val noteDate = LocalDateTime.parse(note.date, formatter)
                                             val currentDateTime = LocalDateTime.now()
-                                            if (noteDate.isAfter(currentDateTime)) {
+                                            if (!note.enabled) {
                                                 Row(modifier = Modifier.fillMaxSize()) {
                                                     Row (modifier = Modifier.fillMaxWidth(0.75f)){
-                                                        Text("${note.note}", textAlign = TextAlign.Center, fontFamily = PixelFontFamily())
-
+                                                        Text(note.note, textAlign = TextAlign.Center, fontFamily = PixelFontFamily())
 
                                                     }
+
                                                 }
                                             }else{
                                                 Row(modifier = Modifier.fillMaxSize()) {
                                                     Row (modifier = Modifier.fillMaxWidth(0.75f)){
-                                                        Text("${note.note}", textAlign = TextAlign.Center, fontFamily = PixelFontFamily(), textDecoration = TextDecoration.LineThrough)
+                                                        Text(note.note, textAlign = TextAlign.Center, fontFamily = PixelFontFamily(), textDecoration = TextDecoration.LineThrough)
 
 
                                                     }
                                                 }
 
+
+                                            }
+
+                                            if (noteDate.isBefore(currentDateTime)){
+                                                scope.launch {
+                                                    try {
+                                                        dao.updateEnable(note.id,true)
+
+                                                    }catch (e: Exception){
+                                                        println("database error: ${e.message}")
+                                                    }
+                                                }
                                             }
                                             val (dateV,timeV) = note.date.split("T")
                                             val(year,month,day) = dateV.split("-")
@@ -243,6 +260,9 @@ fun App(dao: ActivityDao) {
                                         }
                                     }
 
+                                }
+                                item{
+                                    Spacer(Modifier.padding(vertical = 3.dp))
                                 }
                             }
                             //Todolist Kısmı
@@ -317,7 +337,6 @@ fun App(dao: ActivityDao) {
                                 }
                         }
 
-
               }
           }
 
@@ -344,7 +363,7 @@ fun App(dao: ActivityDao) {
                             Column(modifier = Modifier.fillMaxSize()) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     IconButton(onClick = { fieldState.value = !fieldState.value }) {
-                                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = Color.White)
+                                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                                     }
                                     Spacer(modifier = Modifier.padding(horizontal = 15.dp))
 

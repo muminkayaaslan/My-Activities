@@ -28,8 +28,11 @@ interface ActivityDao {
     suspend fun getReminderNoteByTypeAndDate(type: String,date: String): String?
 
 
-        @Query("Select * FROM activityentity WHERE SUBSTR(date,1,10) = :date AND type = :type")
-        suspend fun getReminderbyLocalDate(date: String,type: String): List<ActivityEntity?>
+    @Query("Select * FROM activityentity WHERE SUBSTR(date,1,10) = :date AND type = :type ORDER BY id ASC")
+    suspend fun getReminderbyLocalDate(date: String,type: String): List<ActivityEntity?>
+
+    @Query("SELECT * FROM activityentity WHERE date > :currentDate ORDER BY date ASC LIMIT 1")
+    suspend fun getNextReminder(currentDate: String): ActivityEntity?
 
 
 }
