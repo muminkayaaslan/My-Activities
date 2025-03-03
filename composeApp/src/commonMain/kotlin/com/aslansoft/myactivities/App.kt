@@ -1,23 +1,62 @@
+@file:Suppress("NAME_SHADOWING")
+
 package com.aslansoft.myactivities
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Card
+import androidx.compose.material.Checkbox
+import androidx.compose.material.Divider
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Snackbar
+import androidx.compose.material.SnackbarHost
+import androidx.compose.material.SnackbarHostState
+import androidx.compose.material.Tab
+import androidx.compose.material.TabRow
+import androidx.compose.material.TabRowDefaults
 import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.BottomCenter
 import androidx.compose.ui.Alignment.Companion.BottomEnd
@@ -41,7 +80,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.aslansoft.myactivities.Data.ActivityDao
 import com.aslansoft.myactivities.Data.ActivityEntity
-import com.aslansoft.myactivities.classes.PixelFontFamily
+import com.aslansoft.myactivities.classes.Poppins
 import kotlinx.coroutines.launch
 import kotlinx.datetime.toJavaLocalDateTime
 import myactivities.composeapp.generated.resources.Res
@@ -79,7 +118,7 @@ fun App(dao: ActivityDao) {
         //Scaffold ile ekranı hazır bi şekilde sabit yapıları oluşturduk
       Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
           TopAppBar(modifier = Modifier.fillMaxWidth(),title = {
-                      Text("Aktiviteler", textAlign = TextAlign.Center, fontFamily = PixelFontFamily(), color = Color.White)
+                      Text("Aktiviteler", textAlign = TextAlign.Center, fontFamily = Poppins(), color = Color.White)
           }, backgroundColor = Color(57, 26, 120))
       }, floatingActionButton = { FloatingActionButton(backgroundColor = Color(56, 149, 192),shape = RoundedCornerShape(6.dp),onClick = { fieldState.value = true }) {
           Icon(Icons.Filled.Add, contentDescription = "Add")
@@ -108,13 +147,13 @@ fun App(dao: ActivityDao) {
                                   type.value = "TodoList"
                               }
                           },
-                          text = { Text(text = title,fontFamily = PixelFontFamily()) },
+                          text = { Text(text = title,fontFamily = Poppins()) },
                       )
                   }
               }
           }){ innerPadding ->
           //Genel Arayüz
-          if (notes.size == 0){
+          if (notes.isEmpty()){
               Column(modifier = Modifier.fillMaxSize()
                   .paint(painter = painterResource(Res.drawable.background),
                       contentScale = ContentScale.Crop).clickable { fieldState.value = true },
@@ -178,7 +217,7 @@ fun App(dao: ActivityDao) {
                                             if (!note.enabled) {
                                                 Row(modifier = Modifier.fillMaxSize()) {
                                                     Row (modifier = Modifier.fillMaxWidth(0.75f)){
-                                                        Text(note.note, textAlign = TextAlign.Center, fontFamily = PixelFontFamily())
+                                                        Text(note.note, textAlign = TextAlign.Center, fontFamily = Poppins())
 
                                                     }
 
@@ -186,7 +225,7 @@ fun App(dao: ActivityDao) {
                                             }else{
                                                 Row(modifier = Modifier.fillMaxSize()) {
                                                     Row (modifier = Modifier.fillMaxWidth(0.75f)){
-                                                        Text(note.note, textAlign = TextAlign.Center, fontFamily = PixelFontFamily(), textDecoration = TextDecoration.LineThrough)
+                                                        Text(note.note, textAlign = TextAlign.Center, fontFamily = Poppins(), textDecoration = TextDecoration.LineThrough)
 
 
                                                     }
@@ -210,8 +249,8 @@ fun App(dao: ActivityDao) {
                                             if (getPlatform().name == "Desktop"){
                                                 Box(modifier = Modifier.fillMaxSize(),contentAlignment = BottomEnd){
                                                     Column(modifier = Modifier.fillMaxWidth(0.25f).fillMaxHeight(0.4f)) {
-                                                        Text("${day}.${month}.${year}", fontFamily = PixelFontFamily(), fontSize = 15.sp)
-                                                        Text(timeV,fontFamily = PixelFontFamily(), fontSize = 15.sp)
+                                                        Text("${day}.${month}.${year}", fontFamily = Poppins(), fontSize = 15.sp)
+                                                        Text(timeV,fontFamily = Poppins(), fontSize = 15.sp)
 
                                                     }
 
@@ -220,8 +259,8 @@ fun App(dao: ActivityDao) {
                                                 Box(modifier = Modifier.fillMaxSize(),contentAlignment = BottomEnd){
                                                     Column(modifier = Modifier.fillMaxWidth(0.33f).fillMaxHeight(0.4f)) {
 
-                                                        Text("${day}.${month}.${year}", fontFamily = PixelFontFamily(), fontSize = 10.sp)
-                                                        Text(timeV,fontFamily = PixelFontFamily(), fontSize = 10.sp)
+                                                        Text("${day}.${month}.${year}", fontFamily = Poppins(), fontSize = 10.sp)
+                                                        Text(timeV,fontFamily = Poppins(), fontSize = 10.sp)
 
                                                     }
 
@@ -240,20 +279,20 @@ fun App(dao: ActivityDao) {
                                                 Column(modifier = Modifier.fillMaxSize().padding(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                                                     Row(modifier = Modifier.fillMaxWidth()) {
                                                         if (note.type == "Reminder"){
-                                                            Text("Hatırlatıcı",fontFamily = PixelFontFamily(), fontSize = 25.sp)
+                                                            Text("Hatırlatıcı",fontFamily = Poppins(), fontSize = 25.sp)
                                                         }else{
-                                                            Text("Aktivite",fontFamily = PixelFontFamily(), fontSize = 25.sp)
+                                                            Text("Aktivite",fontFamily = Poppins(), fontSize = 25.sp)
                                                         }
                                                     }
                                                     Divider(thickness = 1.dp, color = Color.Black)
                                                     Row(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.9f)) {
-                                                        Text(note.note, fontFamily = PixelFontFamily())
+                                                        Text(note.note, fontFamily = Poppins())
                                                     }
                                                     Divider(thickness = 1.dp, color = Color.Black)
                                                     Row (modifier = Modifier.fillMaxWidth()) {
                                                         val(dateV,timeV) = note.date.split("T")
                                                         val (year,month,day) = dateV.split("-")
-                                                        Text("${day}.${month}.${year}-${timeV}", fontFamily = PixelFontFamily(), fontSize = 15.sp)
+                                                        Text("${day}.${month}.${year}-${timeV}", fontFamily = Poppins(), fontSize = 15.sp)
                                                     }
                                                 }
                                             }
@@ -287,10 +326,10 @@ fun App(dao: ActivityDao) {
                                                             verticalAlignment = Alignment.CenterVertically) {
                                                             Box(modifier = Modifier.weight(1f),contentAlignment = CenterStart) {
                                                                 if (note.enabled){
-                                                                    Text(note.note, fontFamily = PixelFontFamily(), fontSize = 15.sp, textDecoration = TextDecoration.LineThrough)
+                                                                    Text(note.note, fontFamily = Poppins(), fontSize = 15.sp, textDecoration = TextDecoration.LineThrough)
 
                                                                 }else{
-                                                                    Text(note.note, fontFamily = PixelFontFamily(), fontSize = 15.sp)
+                                                                    Text(note.note, fontFamily = Poppins(), fontSize = 15.sp)
                                                                 }
                                                             }
                                                             enabled = note.enabled
@@ -309,9 +348,9 @@ fun App(dao: ActivityDao) {
                                                     val (year,month,day) = date.split("-")
                                                     Spacer(modifier = Modifier.padding(3.dp))
                                                     Row(modifier = Modifier.fillMaxWidth().weight(1f).padding(end = 2.dp)) {
-                                                        Text("${day}.${month}.${year}", fontFamily = PixelFontFamily(), fontSize = 15.sp)
+                                                        Text("${day}.${month}.${year}", fontFamily = Poppins(), fontSize = 15.sp)
                                                         Spacer(modifier = Modifier.weight(1f))
-                                                        Text(time,fontFamily = PixelFontFamily(), fontSize = 15.sp)
+                                                        Text(time,fontFamily = Poppins(), fontSize = 15.sp)
                                                     }
 
                                                 }
@@ -329,7 +368,7 @@ fun App(dao: ActivityDao) {
                                                     note.id?.let { it1 -> dao.deleteById(it1) }
                                                 }
                                                 expandedMenu = false}){
-                                                    Text("Sil",fontFamily = PixelFontFamily())
+                                                    Text("Sil",fontFamily = Poppins())
                                                 }
                                             }
                                         }
@@ -367,7 +406,7 @@ fun App(dao: ActivityDao) {
                                     }
                                     Spacer(modifier = Modifier.padding(horizontal = 15.dp))
 
-                                        Text("Not Ekle (Çift tıkla)", fontSize = 15.sp, fontFamily = PixelFontFamily(), color = Color.White)
+                                        Text("Not Ekle (Çift tıkla)", fontSize = 15.sp, fontFamily = Poppins(), color = Color.White)
 
                                     Box (modifier = Modifier.fillMaxWidth(),contentAlignment = CenterEnd){
                                         TextButton(onClick = {
@@ -399,7 +438,7 @@ fun App(dao: ActivityDao) {
 
                                             }
                                             }) {
-                                            Text("Kaydet", fontFamily = PixelFontFamily(), fontWeight = FontWeight.Bold,color = Color.White)
+                                            Text("Kaydet", fontFamily = Poppins(), fontWeight = FontWeight.Bold,color = Color.White)
                                         }
                                     }
 
@@ -417,7 +456,7 @@ fun App(dao: ActivityDao) {
                                         maxLines = 7,
                                         minLines = 7,
                                         textStyle = TextStyle(
-                                            fontFamily = PixelFontFamily(),
+                                            fontFamily = Poppins(),
                                             color = Color.White,
                                         ),
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
@@ -429,11 +468,11 @@ fun App(dao: ActivityDao) {
                                 Row(modifier = Modifier.fillMaxWidth().weight(1f), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.Bottom) {
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                         if (date.value.isNotEmpty() && time.value.isNotEmpty()){
-                                            Text("${date.value} - ${time.value}", fontFamily = PixelFontFamily(), color = Color.White)
+                                            Text("${date.value} - ${time.value}", fontFamily = Poppins(), color = Color.White)
                                         }
                                         Button(onClick = {showDatePicker = true},
                                             colors = ButtonDefaults.buttonColors(backgroundColor = Color(56, 149, 192) )){
-                                            Text("Tarih Ekle", fontFamily = PixelFontFamily(), color = Color.White)
+                                            Text("Tarih Ekle", fontFamily = Poppins(), color = Color.White)
                                         }
                                     }
 
@@ -465,7 +504,7 @@ fun App(dao: ActivityDao) {
                                                                 type.value = "TodoList"
                                                             }
                                                             },
-                                                text = { Text(text = title,fontFamily = PixelFontFamily()) },
+                                                text = { Text(text = title,fontFamily = Poppins()) },
                                             )
                                         }
                                     }
@@ -505,16 +544,16 @@ fun App(dao: ActivityDao) {
                 titleStyle = TextStyle(color = Color.White,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    fontFamily = PixelFontFamily()),
+                    fontFamily = Poppins()),
                 doneLabelStyle = TextStyle(color = Color.White,
                     fontSize = 14.sp,
                     fontWeight = FontWeight(600),
-                    fontFamily = PixelFontFamily()
+                    fontFamily = Poppins()
                     ),
                 yearsRange = IntRange(2000,2099),
                 doneLabel = "Kaydet",
                 dateTextStyle = TextStyle(color = Color.White,
-                    fontFamily = PixelFontFamily()),
+                    fontFamily = Poppins()),
                     dateTextColor = Color(56, 149, 192),
                     selectorProperties = WheelPickerDefaults.selectorProperties(
                     borderColor = Color(56, 149, 192)
