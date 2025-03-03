@@ -52,7 +52,8 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
-            implementation("network.chaintech:kmp-date-time-picker:1.0.3")
+            //noinspection UseTomlInstead
+            implementation("network.chaintech:kmp-date-time-picker:1.0.7")
             implementation(libs.androidx.room.runtime)
             implementation(libs.sqlite.bundled)
 

@@ -104,90 +104,121 @@ fun App(dao: ActivityDao) {
 
         val notes by dao.getAll().collectAsState(initial = emptyList())
         val scope = rememberCoroutineScope()
-        val fieldState = remember{ mutableStateOf(false) }
+        val fieldState = remember { mutableStateOf(false) }
         val note = remember { mutableStateOf("") }
         val textFieldFocused = remember { mutableStateOf(false) }
         val focusRequester = remember { FocusRequester() }
         var showDatePicker by remember { mutableStateOf(false) }
         var selectedDate by remember { mutableStateOf<LocalDateTime?>(null) }
         val date = remember { mutableStateOf("") }
-        val  time =remember { mutableStateOf("") }
+        val time = remember { mutableStateOf("") }
         val snackbarHostState = remember { SnackbarHostState() }
         val type = remember { mutableStateOf("Reminder") }
         var selectedTabIndexMain by remember { mutableStateOf(0) }
         //Scaffold ile ekranı hazır bi şekilde sabit yapıları oluşturduk
-      Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
-          TopAppBar(modifier = Modifier.fillMaxWidth(),title = {
-                      Text("Aktiviteler", textAlign = TextAlign.Center, fontFamily = Poppins(), color = Color.White)
-          }, backgroundColor = Color(57, 26, 120))
-      }, floatingActionButton = { FloatingActionButton(backgroundColor = Color(56, 149, 192),shape = RoundedCornerShape(6.dp),onClick = { fieldState.value = true }) {
-          Icon(Icons.Filled.Add, contentDescription = "Add")
-      }
-      },
-          bottomBar = {
-              val tabs = listOf("Hatırlatıcılar", "Aktiviteler")
+        Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
+            TopAppBar(modifier = Modifier.fillMaxWidth(), title = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        "Aktiviteler",
+                        textAlign = TextAlign.Center,
+                        fontFamily = Poppins(),
+                        color = Color.White
+                    )
+                }
 
-              TabRow(backgroundColor = Color(57, 26, 120),
-                  contentColor = Color.White,
-                  selectedTabIndex = selectedTabIndexMain,
-                  indicator = { tabPositions ->
-                      TabRowDefaults.Indicator(
-                          Modifier.tabIndicatorOffset(tabPositions[selectedTabIndexMain])
-                      )
-                  }
-              ) {
-                  tabs.forEachIndexed { index, title ->
-                      Tab(
-                          selected = selectedTabIndexMain == index,
-                          onClick = { selectedTabIndexMain = index
+            }, backgroundColor = Color(0, 48, 146))
+        }, floatingActionButton = {
+            FloatingActionButton(
+                backgroundColor = Color(0, 135, 158),
+                shape = RoundedCornerShape(6.dp),
+                onClick = { fieldState.value = true }) {
+                Icon(Icons.Filled.Add, contentDescription = "Add")
+            }
+        },
+            bottomBar = {
+                val tabs = listOf("Hatırlatıcılar", "Aktiviteler")
 
-                              if (title == "Hatırlatıcı"){
-                                  type.value = "Reminder"
-                              }else if (title == "Aktivite"){
-                                  type.value = "TodoList"
-                              }
-                          },
-                          text = { Text(text = title,fontFamily = Poppins()) },
-                      )
-                  }
-              }
-          }){ innerPadding ->
-          //Genel Arayüz
-          if (notes.isEmpty()){
-              Column(modifier = Modifier.fillMaxSize()
-                  .paint(painter = painterResource(Res.drawable.background),
-                      contentScale = ContentScale.Crop).clickable { fieldState.value = true },
-                  horizontalAlignment = Alignment.CenterHorizontally,
-                  verticalArrangement = Arrangement.Center) {
-                  Icon(imageVector = Icons.Filled.Notifications,
-                      contentDescription = "Notifications",
-                      tint = Color.White)
+                TabRow(backgroundColor = Color(0, 48, 146),
+                    contentColor = Color.White,
+                    selectedTabIndex = selectedTabIndexMain,
+                    indicator = { tabPositions ->
+                        TabRowDefaults.Indicator(
+                            Modifier.tabIndicatorOffset(tabPositions[selectedTabIndexMain])
+                        )
+                    }
+                ) {
+                    tabs.forEachIndexed { index, title ->
+                        Tab(
+                            selected = selectedTabIndexMain == index,
+                            onClick = {
+                                selectedTabIndexMain = index
 
-                  Text("Henüz not almadınız...",
-                      color = Color.White)
-              }
-          }else{
+                                if (title == "Hatırlatıcı") {
+                                    type.value = "Reminder"
+                                } else if (title == "Aktivite") {
+                                    type.value = "TodoList"
+                                }
+                            },
+                            text = { Text(text = title, fontFamily = Poppins()) },
+                        )
+                    }
+                }
+            }) { innerPadding ->
+            //Genel Arayüz
+            if (notes.isEmpty()) {
+                Column(
+                    modifier = Modifier.fillMaxSize()
+                        .paint(
+                            painter = painterResource(Res.drawable.background),
+                            contentScale = ContentScale.Crop
+                        ).clickable { fieldState.value = true },
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Notifications,
+                        contentDescription = "Notifications",
+                        tint = Color.White
+                    )
+
+                    Text(
+                        "Henüz not almadınız...",
+                        color = Color.White
+                    )
+                }
+            } else {
 
 
-              Column(modifier = Modifier.fillMaxSize().padding(innerPadding)
-                  .paint(painter = painterResource(Res.drawable.background),
-                      contentScale = ContentScale.Crop)) {
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(innerPadding)
+                        .paint(
+                            painter = painterResource(Res.drawable.background),
+                            contentScale = ContentScale.Crop
+                        )
+                ) {
                     Spacer(modifier = Modifier.padding(3.dp))
-                  val columnSize = remember { mutableStateOf(0) }
+                    val columnSize = remember { mutableStateOf(0) }
 
-                  if (getPlatform().name == "Android"){
-                      columnSize.value = 2
-                  }else if (getPlatform().name == "Desktop"){
-                      columnSize.value = 4
-                  }
+                    if (getPlatform().name == "Android") {
+                        columnSize.value = 2
+                    } else if (getPlatform().name == "Desktop") {
+                        columnSize.value = 4
+                    }
 
 
-                        when(selectedTabIndexMain ){
+                    when (selectedTabIndexMain) {
                         0 ->
-                            LazyVerticalStaggeredGrid(modifier = Modifier.padding(end = 10.dp, start = 10.dp),columns = StaggeredGridCells.Fixed(columnSize.value),
+                            LazyVerticalStaggeredGrid(
+                                modifier = Modifier.padding(end = 10.dp, start = 10.dp),
+                                columns = StaggeredGridCells.Fixed(columnSize.value),
                                 verticalItemSpacing = 30.dp,
-                                horizontalArrangement = Arrangement.spacedBy(15.dp)) {
-                                items(notes.filter { it.type == "Reminder" }.size){ index ->
+                                horizontalArrangement = Arrangement.spacedBy(15.dp)
+                            ) {
+                                items(notes.filter { it.type == "Reminder" }.size) { index ->
                                     var expandedMenu by remember { mutableStateOf(false) }
 
                                     val note = notes.filter { it.type == "Reminder" }[index]
@@ -195,37 +226,59 @@ fun App(dao: ActivityDao) {
                                     val noteField = remember { mutableStateOf(false) }
                                     enabled.value = note.enabled
 
-                                    Card(modifier = Modifier.width(RandomDp(index)).height(RandomHeight(index)).clickable { noteField.value = true }
-                                        .then(gestureDetect(onAction = {expandedMenu = true}, secondAction = {noteField.value = true})), backgroundColor = RandomColor(index)) {
+                                    Card(
+                                        modifier = Modifier.width(RandomDp(index))
+                                            .height(RandomHeight(index))
+                                            .clickable { noteField.value = true }
+                                            .then(
+                                                gestureDetect(
+                                                    onAction = { expandedMenu = true },
+                                                    secondAction = { noteField.value = true })
+                                            ), backgroundColor = RandomColor(index)
+                                    ) {
 
-                                        if (expandedMenu){
-                                            DropdownMenu(expandedMenu, onDismissRequest = {expandedMenu = false}) {
+                                        if (expandedMenu) {
+                                            DropdownMenu(
+                                                expandedMenu,
+                                                onDismissRequest = { expandedMenu = false }) {
                                                 DropdownMenuItem(onClick = {
                                                     scope.launch {
                                                         note.id?.let { it1 -> dao.deleteById(it1) }
                                                     }
                                                     expandedMenu = false
-                                                }){ Text("Sil") }
+                                                }) { Text("Sil") }
 
                                             }
                                         }
-                                        Box(modifier = Modifier.fillMaxSize().padding(4.dp)){
-                                            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm").withZone(
-                                                ZoneId.systemDefault())
+                                        Box(modifier = Modifier.fillMaxSize().padding(4.dp)) {
+                                            val formatter =
+                                                DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")
+                                                    .withZone(
+                                                        ZoneId.systemDefault()
+                                                    )
                                             val noteDate = LocalDateTime.parse(note.date, formatter)
                                             val currentDateTime = LocalDateTime.now()
                                             if (!note.enabled) {
                                                 Row(modifier = Modifier.fillMaxSize()) {
-                                                    Row (modifier = Modifier.fillMaxWidth(0.75f)){
-                                                        Text(note.note, textAlign = TextAlign.Center, fontFamily = Poppins())
+                                                    Row(modifier = Modifier.fillMaxWidth(0.75f)) {
+                                                        Text(
+                                                            note.note,
+                                                            textAlign = TextAlign.Center,
+                                                            fontFamily = Poppins()
+                                                        )
 
                                                     }
 
                                                 }
-                                            }else{
+                                            } else {
                                                 Row(modifier = Modifier.fillMaxSize()) {
-                                                    Row (modifier = Modifier.fillMaxWidth(0.75f)){
-                                                        Text(note.note, textAlign = TextAlign.Center, fontFamily = Poppins(), textDecoration = TextDecoration.LineThrough)
+                                                    Row(modifier = Modifier.fillMaxWidth(0.75f)) {
+                                                        Text(
+                                                            note.note,
+                                                            textAlign = TextAlign.Center,
+                                                            fontFamily = Poppins(),
+                                                            textDecoration = TextDecoration.LineThrough
+                                                        )
 
 
                                                     }
@@ -234,33 +287,61 @@ fun App(dao: ActivityDao) {
 
                                             }
 
-                                            if (noteDate.isBefore(currentDateTime)){
+                                            if (noteDate.isBefore(currentDateTime)) {
                                                 scope.launch {
                                                     try {
-                                                        dao.updateEnable(note.id,true)
+                                                        dao.updateEnable(note.id, true)
 
-                                                    }catch (e: Exception){
+                                                    } catch (e: Exception) {
                                                         println("database error: ${e.message}")
                                                     }
                                                 }
                                             }
-                                            val (dateV,timeV) = note.date.split("T")
-                                            val(year,month,day) = dateV.split("-")
-                                            if (getPlatform().name == "Desktop"){
-                                                Box(modifier = Modifier.fillMaxSize(),contentAlignment = BottomEnd){
-                                                    Column(modifier = Modifier.fillMaxWidth(0.25f).fillMaxHeight(0.4f)) {
-                                                        Text("${day}.${month}.${year}", fontFamily = Poppins(), fontSize = 15.sp)
-                                                        Text(timeV,fontFamily = Poppins(), fontSize = 15.sp)
+                                            val (dateV, timeV) = note.date.split("T")
+                                            val (year, month, day) = dateV.split("-")
+                                            if (getPlatform().name == "Desktop") {
+                                                Box(
+                                                    modifier = Modifier.fillMaxSize(),
+                                                    contentAlignment = BottomEnd
+                                                ) {
+                                                    Column(
+                                                        modifier = Modifier.fillMaxWidth(0.25f)
+                                                            .fillMaxHeight(0.4f)
+                                                    ) {
+                                                        Text(
+                                                            "${day}.${month}.${year}",
+                                                            fontFamily = Poppins(),
+                                                            fontSize = 15.sp
+                                                        )
+                                                        Text(
+                                                            timeV,
+                                                            fontFamily = Poppins(),
+                                                            fontSize = 15.sp
+                                                        )
 
                                                     }
 
                                                 }
-                                            }else{
-                                                Box(modifier = Modifier.fillMaxSize(),contentAlignment = BottomEnd){
-                                                    Column(modifier = Modifier.fillMaxWidth(0.33f).fillMaxHeight(0.4f)) {
+                                            } else {
+                                                Box(
+                                                    modifier = Modifier.fillMaxSize(),
+                                                    contentAlignment = BottomEnd
+                                                ) {
+                                                    Column(
+                                                        modifier = Modifier.fillMaxWidth(0.33f)
+                                                            .fillMaxHeight(0.4f)
+                                                    ) {
 
-                                                        Text("${day}.${month}.${year}", fontFamily = Poppins(), fontSize = 10.sp)
-                                                        Text(timeV,fontFamily = Poppins(), fontSize = 10.sp)
+                                                        Text(
+                                                            "${day}.${month}.${year}",
+                                                            fontFamily = Poppins(),
+                                                            fontSize = 10.sp
+                                                        )
+                                                        Text(
+                                                            timeV,
+                                                            fontFamily = Poppins(),
+                                                            fontSize = 10.sp
+                                                        )
 
                                                     }
 
@@ -270,29 +351,49 @@ fun App(dao: ActivityDao) {
                                         }
 
 
-
                                     }
 
-                                    if (noteField.value){
+                                    if (noteField.value) {
                                         Dialog(onDismissRequest = { noteField.value = false }) {
-                                            Card(modifier = Modifier.width(500.dp).height(300.dp), backgroundColor = RandomColor(index)) {
-                                                Column(modifier = Modifier.fillMaxSize().padding(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                            Card(
+                                                modifier = Modifier.width(500.dp).height(300.dp),
+                                                backgroundColor = RandomColor(index)
+                                            ) {
+                                                Column(
+                                                    modifier = Modifier.fillMaxSize().padding(4.dp),
+                                                    horizontalAlignment = Alignment.CenterHorizontally
+                                                ) {
                                                     Row(modifier = Modifier.fillMaxWidth()) {
-                                                        if (note.type == "Reminder"){
-                                                            Text("Hatırlatıcı",fontFamily = Poppins(), fontSize = 25.sp)
-                                                        }else{
-                                                            Text("Aktivite",fontFamily = Poppins(), fontSize = 25.sp)
+                                                        if (note.type == "Reminder") {
+                                                            Text(
+                                                                "Hatırlatıcı",
+                                                                fontFamily = Poppins(),
+                                                                fontSize = 25.sp
+                                                            )
+                                                        } else {
+                                                            Text(
+                                                                "Aktivite",
+                                                                fontFamily = Poppins(),
+                                                                fontSize = 25.sp
+                                                            )
                                                         }
                                                     }
                                                     Divider(thickness = 1.dp, color = Color.Black)
-                                                    Row(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.9f)) {
+                                                    Row(
+                                                        modifier = Modifier.fillMaxWidth()
+                                                            .fillMaxHeight(0.9f)
+                                                    ) {
                                                         Text(note.note, fontFamily = Poppins())
                                                     }
                                                     Divider(thickness = 1.dp, color = Color.Black)
-                                                    Row (modifier = Modifier.fillMaxWidth()) {
-                                                        val(dateV,timeV) = note.date.split("T")
-                                                        val (year,month,day) = dateV.split("-")
-                                                        Text("${day}.${month}.${year}-${timeV}", fontFamily = Poppins(), fontSize = 15.sp)
+                                                    Row(modifier = Modifier.fillMaxWidth()) {
+                                                        val (dateV, timeV) = note.date.split("T")
+                                                        val (year, month, day) = dateV.split("-")
+                                                        Text(
+                                                            "${day}.${month}.${year}-${timeV}",
+                                                            fontFamily = Poppins(),
+                                                            fontSize = 15.sp
+                                                        )
                                                     }
                                                 }
                                             }
@@ -300,124 +401,178 @@ fun App(dao: ActivityDao) {
                                     }
 
                                 }
-                                item{
+                                item {
                                     Spacer(Modifier.padding(vertical = 3.dp))
                                 }
                             }
-                            //Todolist Kısmı
-                            1 ->
-                                LazyColumn {
-                                    items(notes.filter { it.type == "TodoList" }.size){ index ->
-                                        val note = notes.filter { it.type == "TodoList" }[index]
-                                        var expandedMenu by remember { mutableStateOf(false) }
-                                        var cardHeight by remember { mutableStateOf(0) }
-                                        var enabled by remember { mutableStateOf(false) }
+                        //Todolist Kısmı
+                        1 ->
+                            LazyColumn {
+                                items(notes.filter { it.type == "TodoList" }.size) { index ->
+                                    val note = notes.filter { it.type == "TodoList" }[index]
+                                    var expandedMenu by remember { mutableStateOf(false) }
+                                    var cardHeight by remember { mutableStateOf(0) }
+                                    var enabled by remember { mutableStateOf(false) }
 
-                                        if(getPlatform().name == "Desktop"){
-                                            cardHeight = 130
-                                        }else{
-                                            cardHeight = 70
-                                        }
-                                            Card(modifier = Modifier.fillMaxWidth().height(cardHeight.dp).padding(start = 4.dp, end = 4.dp).then(gestureDetect(onAction = {expandedMenu = true}, secondAction = {})), backgroundColor = RandomColor(index)) {
-                                                Column (modifier = Modifier.fillMaxSize().padding(start = 2.dp, end = 2.dp), verticalArrangement = Arrangement.Center){
+                                    if (getPlatform().name == "Desktop") {
+                                        cardHeight = 130
+                                    } else {
+                                        cardHeight = 70
+                                    }
+                                    Card(
+                                        modifier = Modifier.fillMaxWidth().height(cardHeight.dp)
+                                            .padding(start = 4.dp, end = 4.dp).then(
+                                                gestureDetect(onAction = { expandedMenu = true },
+                                                    secondAction = {})
+                                            ), backgroundColor = RandomColor(index)
+                                    ) {
+                                        Column(
+                                            modifier = Modifier.fillMaxSize()
+                                                .padding(start = 2.dp, end = 2.dp),
+                                            verticalArrangement = Arrangement.Center
+                                        ) {
 
-                                                        Row(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.4f)
-                                                        , horizontalArrangement = Arrangement.SpaceBetween,
-                                                            verticalAlignment = Alignment.CenterVertically) {
-                                                            Box(modifier = Modifier.weight(1f),contentAlignment = CenterStart) {
-                                                                if (note.enabled){
-                                                                    Text(note.note, fontFamily = Poppins(), fontSize = 15.sp, textDecoration = TextDecoration.LineThrough)
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth()
+                                                    .fillMaxHeight(0.4f),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Box(
+                                                    modifier = Modifier.weight(1f),
+                                                    contentAlignment = CenterStart
+                                                ) {
+                                                    if (note.enabled) {
+                                                        Text(
+                                                            note.note,
+                                                            fontFamily = Poppins(),
+                                                            fontSize = 15.sp,
+                                                            textDecoration = TextDecoration.LineThrough
+                                                        )
 
-                                                                }else{
-                                                                    Text(note.note, fontFamily = Poppins(), fontSize = 15.sp)
-                                                                }
-                                                            }
-                                                            enabled = note.enabled
-                                                            Box(contentAlignment = CenterEnd){
-                                                                Checkbox(checked = enabled, onCheckedChange = {
-
-                                                                    enabled = it
-                                                                    scope.launch {
-                                                                        dao.updateEnable(note.id,enabled)
-                                                                    }
-                                                                })
-                                                            }
-                                                        }
-
-                                                    val (date,time) = note.date.split("T")
-                                                    val (year,month,day) = date.split("-")
-                                                    Spacer(modifier = Modifier.padding(3.dp))
-                                                    Row(modifier = Modifier.fillMaxWidth().weight(1f).padding(end = 2.dp)) {
-                                                        Text("${day}.${month}.${year}", fontFamily = Poppins(), fontSize = 15.sp)
-                                                        Spacer(modifier = Modifier.weight(1f))
-                                                        Text(time,fontFamily = Poppins(), fontSize = 15.sp)
+                                                    } else {
+                                                        Text(
+                                                            note.note,
+                                                            fontFamily = Poppins(),
+                                                            fontSize = 15.sp
+                                                        )
                                                     }
+                                                }
+                                                enabled = note.enabled
+                                                Box(contentAlignment = CenterEnd) {
+                                                    Checkbox(checked = enabled, onCheckedChange = {
 
+                                                        enabled = it
+                                                        scope.launch {
+                                                            dao.updateEnable(note.id, enabled)
+                                                        }
+                                                    })
                                                 }
                                             }
 
+                                            val (date, time) = note.date.split("T")
+                                            val (year, month, day) = date.split("-")
+                                            Spacer(modifier = Modifier.padding(3.dp))
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth().weight(1f)
+                                                    .padding(end = 2.dp)
+                                            ) {
+                                                Text(
+                                                    "${day}.${month}.${year}",
+                                                    fontFamily = Poppins(),
+                                                    fontSize = 15.sp
+                                                )
+                                                Spacer(modifier = Modifier.weight(1f))
+                                                Text(time, fontFamily = Poppins(), fontSize = 15.sp)
+                                            }
 
-                                        Spacer(modifier = Modifier.padding(vertical = 5.dp))
+                                        }
+                                    }
+
+
+                                    Spacer(modifier = Modifier.padding(vertical = 5.dp))
 
 
 
-                                        if (expandedMenu){
-                                            DropdownMenu(expandedMenu, onDismissRequest = {expandedMenu = false}) {
-                                                DropdownMenuItem(onClick = {
-                                                    scope.launch {
+                                    if (expandedMenu) {
+                                        DropdownMenu(
+                                            expandedMenu,
+                                            onDismissRequest = { expandedMenu = false }) {
+                                            DropdownMenuItem(onClick = {
+                                                scope.launch {
                                                     note.id?.let { it1 -> dao.deleteById(it1) }
                                                 }
-                                                expandedMenu = false}){
-                                                    Text("Sil",fontFamily = Poppins())
-                                                }
+                                                expandedMenu = false
+                                            }) {
+                                                Text("Sil", fontFamily = Poppins())
                                             }
                                         }
                                     }
                                 }
-                        }
+                            }
+                    }
 
-              }
-          }
+                }
+            }
 
 
-      }
+        }
 
         //Not aldığımız kısım
-        if (fieldState.value){
+        if (fieldState.value) {
             AnimatedVisibility(
                 visible = fieldState.value,
                 enter = fadeIn(),
                 exit = fadeOut()
-            ){
+            ) {
                 Column(modifier = Modifier.offset(y = if (fieldState.value) 100.dp else 0.dp)) {
                     Dialog(onDismissRequest = { fieldState.value = false }) {
-                        Card(shape = RoundedCornerShape(8.dp),
+                        Card(
+                            shape = RoundedCornerShape(8.dp),
                             elevation = 10.dp,
                             modifier = Modifier.width(700.dp).height(500.dp)
                                 .padding(top = 70.dp, bottom = 70.dp)
-                                .clickable{textFieldFocused.value = true
+                                .clickable {
+                                    textFieldFocused.value = true
                                     focusRequester.requestFocus()
                                 },
-                            backgroundColor =  Color(57, 26, 120)) {
+                            backgroundColor = Color(0, 48, 146)
+                        ) {
                             Column(modifier = Modifier.fillMaxSize()) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     IconButton(onClick = { fieldState.value = !fieldState.value }) {
-                                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                            contentDescription = "Back",
+                                            tint = Color.White
+                                        )
                                     }
                                     Spacer(modifier = Modifier.padding(horizontal = 15.dp))
 
-                                        Text("Not Ekle (Çift tıkla)", fontSize = 15.sp, fontFamily = Poppins(), color = Color.White)
+                                    Text(
+                                        "Not Ekle (Çift tıkla)",
+                                        fontSize = 15.sp,
+                                        fontFamily = Poppins(),
+                                        color = Color.White
+                                    )
 
-                                    Box (modifier = Modifier.fillMaxWidth(),contentAlignment = CenterEnd){
+                                    Box(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        contentAlignment = CenterEnd
+                                    ) {
                                         TextButton(onClick = {
-                                            if (note.value.trim().isNotEmpty()&& selectedDate != null && note.value.length <= 40&& type.value.isNotEmpty() ){
+                                            if (note.value.trim()
+                                                    .isNotEmpty() && selectedDate != null && note.value.length <= 40 && type.value.isNotEmpty()
+                                            ) {
                                                 scope.launch {
-                                                    dao.insert(ActivityEntity(
-                                                        note = note.value.trim(),
-                                                        date = selectedDate.toString(),
-                                                        enabled = false,
-                                                        type = type.value
-                                                    ))
+                                                    dao.insert(
+                                                        ActivityEntity(
+                                                            note = note.value.trim(),
+                                                            date = selectedDate.toString(),
+                                                            enabled = false,
+                                                            type = type.value
+                                                        )
+                                                    )
 
 
                                                     note.value = ""
@@ -426,19 +581,24 @@ fun App(dao: ActivityDao) {
                                                     selectedDate = null
                                                 }
                                                 fieldState.value = !fieldState.value
-                                            }else if(note.value.length > 40) {
+                                            } else if (note.value.length > 40) {
                                                 scope.launch {
                                                     snackbarHostState.showSnackbar("Notunuz 40 karakter uzunluğunda olmalıdır...")
                                                 }
 
-                                            }else{
-                                               scope.launch {
-                                                snackbarHostState.showSnackbar("Lütfen tüm alanları doldur")
-                                               }
+                                            } else {
+                                                scope.launch {
+                                                    snackbarHostState.showSnackbar("Lütfen tüm alanları doldur")
+                                                }
 
                                             }
-                                            }) {
-                                            Text("Kaydet", fontFamily = Poppins(), fontWeight = FontWeight.Bold,color = Color.White)
+                                        }) {
+                                            Text(
+                                                "Kaydet",
+                                                fontFamily = Poppins(),
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White
+                                            )
                                         }
                                     }
 
@@ -446,12 +606,17 @@ fun App(dao: ActivityDao) {
                                 }
                                 Spacer(modifier = Modifier.padding(vertical = 5.dp))
                                 Box {
-                                    BasicTextField(modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 20.dp)
-                                        .focusRequester(focusRequester),
+                                    BasicTextField(
+                                        modifier = Modifier.padding(
+                                            start = 20.dp,
+                                            end = 20.dp,
+                                            bottom = 20.dp
+                                        )
+                                            .focusRequester(focusRequester),
                                         value = note.value,
                                         onValueChange = {
-                                                note.value = it
-                                             },
+                                            note.value = it
+                                        },
                                         enabled = textFieldFocused.value,
                                         maxLines = 7,
                                         minLines = 7,
@@ -465,14 +630,32 @@ fun App(dao: ActivityDao) {
 
                                 }
 
-                                Row(modifier = Modifier.fillMaxWidth().weight(1f), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.Bottom) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().weight(1f),
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.Bottom
+                                ) {
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        if (date.value.isNotEmpty() && time.value.isNotEmpty()){
-                                            Text("${date.value} - ${time.value}", fontFamily = Poppins(), color = Color.White)
+                                        if (date.value.isNotEmpty() && time.value.isNotEmpty()) {
+                                            Text(
+                                                "${date.value} - ${time.value}",
+                                                fontFamily = Poppins(),
+                                                color = Color.White
+                                            )
                                         }
-                                        Button(onClick = {showDatePicker = true},
-                                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(56, 149, 192) )){
-                                            Text("Tarih Ekle", fontFamily = Poppins(), color = Color.White)
+                                        Button(
+                                            onClick = { showDatePicker = true },
+                                            colors = ButtonDefaults.buttonColors(
+                                                backgroundColor = Color(
+                                                    0, 135, 158
+                                                )
+                                            )
+                                        ) {
+                                            Text(
+                                                "Tarih Ekle",
+                                                fontFamily = Poppins(),
+                                                color = Color.White
+                                            )
                                         }
                                     }
 
@@ -481,43 +664,47 @@ fun App(dao: ActivityDao) {
                                 Divider(thickness = 1.dp, color = Color.White)
 
 
-
-                                    val tabs = listOf("Hatırlatıcı", "Aktivite",)
-                                    var selectedTabIndex by remember { mutableStateOf(0) }
-                                    TabRow(backgroundColor = Color(57, 26, 120),
-                                        contentColor = Color.White,
-                                        selectedTabIndex = selectedTabIndex,
-                                        indicator = { tabPositions ->
-                                            TabRowDefaults.Indicator(
-                                                Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex])
-                                            )
-                                        }
-                                    ) {
-                                        tabs.forEachIndexed { index, title ->
-                                            Tab(
-                                                selected = selectedTabIndex == index,
-                                                onClick = { selectedTabIndex = index
-
-                                                            if (title == "Hatırlatıcı"){
-                                                                type.value = "Reminder"
-                                                            }else if (title == "Aktivite"){
-                                                                type.value = "TodoList"
-                                                            }
-                                                            },
-                                                text = { Text(text = title,fontFamily = Poppins()) },
-                                            )
-                                        }
+                                val tabs = listOf("Hatırlatıcı", "Aktivite")
+                                var selectedTabIndex by remember { mutableStateOf(0) }
+                                TabRow(backgroundColor = Color(0, 48, 146),
+                                    contentColor = Color.White,
+                                    selectedTabIndex = selectedTabIndex,
+                                    indicator = { tabPositions ->
+                                        TabRowDefaults.Indicator(
+                                            Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex])
+                                        )
                                     }
+                                ) {
+                                    tabs.forEachIndexed { index, title ->
+                                        Tab(
+                                            selected = selectedTabIndex == index,
+                                            onClick = {
+                                                selectedTabIndex = index
+
+                                                if (title == "Hatırlatıcı") {
+                                                    type.value = "Reminder"
+                                                } else if (title == "Aktivite") {
+                                                    type.value = "TodoList"
+                                                }
+                                            },
+                                            text = { Text(text = title, fontFamily = Poppins()) },
+                                        )
+                                    }
+                                }
                             }
 
 
                         }
-                        Box(modifier = Modifier.fillMaxWidth().weight(1f), contentAlignment = BottomCenter) {
-                            SnackbarHost(hostState = snackbarHostState){data ->
-                                Snackbar( modifier = Modifier.width(730.dp)
-                                    ,snackbarData = data,
+                        Box(
+                            modifier = Modifier.fillMaxWidth().weight(1f),
+                            contentAlignment = BottomCenter
+                        ) {
+                            SnackbarHost(hostState = snackbarHostState) { data ->
+                                Snackbar(
+                                    modifier = Modifier.width(730.dp), snackbarData = data,
                                     contentColor = Color.White,
-                                    backgroundColor = Color(57, 26, 120))
+                                    backgroundColor = Color(0, 48, 146)
+                                )
 
                             }
                         }
@@ -532,31 +719,41 @@ fun App(dao: ActivityDao) {
 
         // tarih kısmı
         val title = remember { mutableStateOf("") }
-        if (getPlatform().name == "Desktop"){
+        if (getPlatform().name == "Desktop") {
             title.value = "Tarih Ekle (Değiştirmek İçin Tekerleği Çevirin)"
-        } else if (getPlatform().name == "Android"){
+        } else if (getPlatform().name == "Android") {
             title.value = "Tarih Ekle"
         }
-        if (showDatePicker){
-            WheelDateTimePickerView(modifier = Modifier.padding(top = 16.dp, bottom = 18.dp).fillMaxWidth(),
-                containerColor = Color(57, 26, 120) ,
+        if (showDatePicker) {
+            val dateTimePickerView =
+                if (getPlatform().name == "Android") DateTimePickerView.BOTTOM_SHEET_VIEW else DateTimePickerView.DIALOG_VIEW
+            WheelDateTimePickerView(
+                dateTimePickerView = dateTimePickerView,
+                modifier = Modifier.padding(top = 16.dp, bottom = 18.dp).fillMaxWidth(),
+                containerColor = Color(0, 48, 146),
                 showDatePicker = showDatePicker,
-                titleStyle = TextStyle(color = Color.White,
+                titleStyle = TextStyle(
+                    color = Color.White,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    fontFamily = Poppins()),
-                doneLabelStyle = TextStyle(color = Color.White,
+                    fontFamily = Poppins()
+                ),
+                doneLabelStyle = TextStyle(
+                    color = Color.White,
                     fontSize = 14.sp,
                     fontWeight = FontWeight(600),
                     fontFamily = Poppins()
-                    ),
-                yearsRange = IntRange(2000,2099),
+                ),
+                yearsRange = IntRange(2000, 2099),
                 doneLabel = "Kaydet",
-                dateTextStyle = TextStyle(color = Color.White,
-                    fontFamily = Poppins()),
-                    dateTextColor = Color(56, 149, 192),
-                    selectorProperties = WheelPickerDefaults.selectorProperties(
-                    borderColor = Color(56, 149, 192)
+                dateTextStyle = TextStyle(
+                    color = Color.White,
+                    fontFamily = Poppins()
+                ),
+                dateTextColor = Color.White,
+                selectorProperties = WheelPickerDefaults.selectorProperties(
+                    borderColor = Color.White,
+                    enabled = false
                 ),
                 title = title.value,
                 timeFormat = TimeFormat.HOUR_24,
@@ -566,9 +763,9 @@ fun App(dao: ActivityDao) {
                     selectedDate = it.toJavaLocalDateTime()
                     //gelen saat ve tarih verisini istediğimiz formata dönüştürebilmek için parçaladık
                     //burda tarihi ve saati
-                    val (dateV,timeV) = selectedDate.toString().split("T")
+                    val (dateV, timeV) = selectedDate.toString().split("T")
                     //burda da tarih bize yıl/ay/gün olarak geldiği için gün.ay.yıl olarak ayırmak için tekrar parçaladık
-                    val(year,month,day) = dateV.split("-")
+                    val (year, month, day) = dateV.split("-")
 
                     //tarih ve saati ayırdık
 
@@ -585,7 +782,6 @@ fun App(dao: ActivityDao) {
                     showDatePicker = false
 
                 },
-                dateTimePickerView = DateTimePickerView.DIALOG_VIEW,
                 onDismiss = { showDatePicker = false }
             )
         }
@@ -593,6 +789,7 @@ fun App(dao: ActivityDao) {
 
     }
 }
+
 val sizeList: List<Dp> = listOf(
     80.dp,
     100.dp,
@@ -613,12 +810,15 @@ val colorList: List<Color> = listOf(
     Color(251, 160, 172),
     Color(231, 185, 107),
 )
+
 fun RandomDp(index: Int): Dp {
     return sizeList[index % sizeList.size]
 }
-fun RandomHeight(index: Int): Dp{
+
+fun RandomHeight(index: Int): Dp {
     return heightList[index % heightList.size]
 }
+
 fun RandomColor(index: Int): Color {
 
     return colorList[index % colorList.size]
