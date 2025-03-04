@@ -52,6 +52,8 @@ import androidx.compose.material.TabRowDefaults
 import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -104,6 +106,7 @@ import network.chaintech.kmp_date_time_picker.ui.datetimepicker.WheelDateTimePic
 import network.chaintech.kmp_date_time_picker.utils.DateTimePickerView
 import network.chaintech.kmp_date_time_picker.utils.TimeFormat
 import network.chaintech.kmp_date_time_picker.utils.WheelPickerDefaults
+import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import sun.swing.SwingUtilities2.drawRect
@@ -559,7 +562,7 @@ fun App(dao: ActivityDao) {
                         Card(
                             shape = RoundedCornerShape(8.dp),
                             elevation = 10.dp,
-                            modifier = Modifier.width(700.dp).height(500.dp)
+                            modifier = Modifier.width(700.dp).fillMaxHeight(0.7f)
                                 .padding(top = 70.dp, bottom = 70.dp).clickable {
                                     textFieldFocused.value = true
                                     focusRequester.requestFocus()
@@ -578,7 +581,7 @@ fun App(dao: ActivityDao) {
                                     Spacer(modifier = Modifier.padding(horizontal = 15.dp))
 
                                     Text(
-                                        "Not Ekle (Çift tıkla)",
+                                        "Not Ekle",
                                         fontSize = 15.sp,
                                         fontFamily = Poppins(),
                                         color = Color.White
@@ -632,7 +635,41 @@ fun App(dao: ActivityDao) {
 
 
                                 }
-                                Spacer(modifier = Modifier.padding(vertical = 5.dp))
+                                val reminderTitle = remember { mutableStateOf("") }
+                                if (type.value == "Reminder") {
+                                    TextField(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        value = reminderTitle.value,
+                                        onValueChange = {
+                                            reminderTitle.value = it
+                                        },
+                                        colors = TextFieldDefaults.textFieldColors(
+                                            backgroundColor = Color.Transparent,
+                                            focusedIndicatorColor = Color.Transparent,
+                                            unfocusedIndicatorColor = Color.Transparent,
+                                            textColor = Color.White
+                                        ),
+                                        placeholder = {
+                                            Text(
+                                               "Başlık",
+                                                fontFamily = Poppins(),
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White,
+                                                textAlign = TextAlign.Center
+                                            )
+                                        },
+                                        textStyle = TextStyle(
+                                            fontFamily = Poppins(),
+                                            fontWeight = FontWeight.Bold
+                                        ),
+                                        singleLine = true
+                                    )
+                                    Divider(
+                                        modifier = Modifier.padding(top = 3.dp, bottom = 3.dp),
+                                        color = Color.White
+                                    )
+                                }
+
                                 Box {
                                     BasicTextField(
                                         modifier = Modifier.padding(
@@ -668,6 +705,7 @@ fun App(dao: ActivityDao) {
                                                 color = Color.White,
                                             )
                                         }
+
                                         Button(
                                             onClick = { showDatePicker = true },
                                             colors = ButtonDefaults.buttonColors(
@@ -847,25 +885,31 @@ fun CustomCheckbox(
     checkedColor: Color = Color.White,
     uncheckedColor: Color = Color.Gray
 ) {
-    val borderColor = if(!checked) checkedColor else Color.Transparent
+    val borderColor = if (!checked) checkedColor else Color.Transparent
 
-    Box(modifier = modifier.height(size)
-        .background(
-            color = if (checked) checkedColor else uncheckedColor, shape = RectangleShape
-        ).width(size).clickable(
-            interactionSource = remember { MutableInteractionSource() },
-            indication = null
-        ) {
-            onCheckedChange(!checked)
-        }.border(width = 1.dp, color = borderColor, RectangleShape)
-        .clip(RectangleShape)) {
+    Box(
+        modifier = modifier.height(size)
+            .background(
+                color = if (checked) checkedColor else uncheckedColor, shape = RectangleShape
+            ).width(size).clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) {
+                onCheckedChange(!checked)
+            }.border(width = 1.dp, color = borderColor, RectangleShape)
+            .clip(RectangleShape)
+    ) {
         if (checked) {
             Box(modifier = Modifier.height(size).width(size)) {
                 // Çekiş işlemi burada yapılabilir
                 // Örneğin: Çizim yapılabilir veya içeriği değiştirebilirsiniz
                 if (checked) {
                     Box(modifier = Modifier.fillMaxSize()) {
-                        Icon(imageVector = Icons.Default.Check, contentDescription = "", tint = Color.White)
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "",
+                            tint = Color.White
+                        )
                     }
                 }
             }
