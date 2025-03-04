@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "acbf386e8aa18d3c0184e0a340ad26c0",
+    "identityHash": "9286aaaf1fee0c60e4189a065e227a88",
     "entities": [
       {
         "tableName": "activityentity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`note` TEXT NOT NULL, `date` TEXT NOT NULL, `type` TEXT NOT NULL, `enabled` INTEGER NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`note` TEXT NOT NULL, `date` TEXT NOT NULL, `type` TEXT NOT NULL, `enabled` INTEGER NOT NULL, `reminderTitle` TEXT, `id` INTEGER PRIMARY KEY AUTOINCREMENT)",
         "fields": [
           {
             "fieldPath": "note",
@@ -33,6 +33,11 @@
             "notNull": true
           },
           {
+            "fieldPath": "reminderTitle",
+            "columnName": "reminderTitle",
+            "affinity": "TEXT"
+          },
+          {
             "fieldPath": "id",
             "columnName": "id",
             "affinity": "INTEGER"
@@ -48,7 +53,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'acbf386e8aa18d3c0184e0a340ad26c0')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9286aaaf1fee0c60e4189a065e227a88')"
     ]
   }
 }

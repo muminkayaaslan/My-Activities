@@ -384,11 +384,13 @@ fun App(dao: ActivityDao) {
                                             ) {
                                                 Row(modifier = Modifier.fillMaxWidth()) {
                                                     if (note.type == "Reminder") {
-                                                        Text(
-                                                            "Hatırlatıcı",
-                                                            fontFamily = Poppins(),
-                                                            fontSize = 25.sp
-                                                        )
+                                                        note.reminderTitle?.let {
+                                                            Text(
+                                                                it,
+                                                                fontFamily = Poppins(),
+                                                                fontSize = 25.sp
+                                                            )
+                                                        }
                                                     } else {
                                                         Text(
                                                             "Aktivite",
@@ -557,6 +559,7 @@ fun App(dao: ActivityDao) {
             AnimatedVisibility(
                 visible = fieldState.value, enter = fadeIn(), exit = fadeOut()
             ) {
+                val reminderTitle = remember { mutableStateOf("") }
                 Column(modifier = Modifier.offset(y = if (fieldState.value) 100.dp else 0.dp)) {
                     Dialog(onDismissRequest = { fieldState.value = false }) {
                         Card(
@@ -595,23 +598,52 @@ fun App(dao: ActivityDao) {
                                             if (note.value.trim()
                                                     .isNotEmpty() && selectedDate != null && note.value.length <= 40 && type.value.isNotEmpty()
                                             ) {
-                                                scope.launch {
-                                                    dao.insert(
-                                                        ActivityEntity(
-                                                            note = note.value.trim(),
-                                                            date = selectedDate.toString(),
-                                                            enabled = false,
-                                                            type = type.value
+                                                if (type.value == "Reminder" && reminderTitle.value.isNotEmpty() ){
+                                                    scope.launch {
+                                                        dao.insert(
+                                                            ActivityEntity(
+                                                                note = note.value.trim(),
+                                                                date = selectedDate.toString(),
+                                                                enabled = false,
+                                                                type = type.value,
+                                                                reminderTitle = reminderTitle.value
+                                                            )
                                                         )
-                                                    )
 
 
-                                                    note.value = ""
-                                                    time.value = ""
-                                                    type.value = ""
-                                                    selectedDate = null
+                                                        note.value = ""
+                                                        time.value = ""
+                                                        type.value = ""
+                                                        reminderTitle.value = ""
+                                                        selectedDate = null
+                                                    }
+                                                    fieldState.value = !fieldState.value
+                                                }else if (reminderTitle.value.isEmpty()){
+                                                    scope.launch {
+                                                        snackbarHostState.showSnackbar("Hatırlatıcı için başlık zorunludur.")
+                                                    }
                                                 }
-                                                fieldState.value = !fieldState.value
+                                                else{
+                                                    scope.launch {
+                                                        dao.insert(
+                                                            ActivityEntity(
+                                                                note = note.value.trim(),
+                                                                date = selectedDate.toString(),
+                                                                enabled = false,
+                                                                type = type.value,
+                                                                reminderTitle = ""
+                                                            )
+                                                        )
+
+
+                                                        note.value = ""
+                                                        time.value = ""
+                                                        type.value = ""
+                                                        selectedDate = null
+                                                    }
+                                                    fieldState.value = !fieldState.value
+                                                }
+
                                             } else if (note.value.length > 40) {
                                                 scope.launch {
                                                     snackbarHostState.showSnackbar("Notunuz 40 karakter uzunluğunda olmalıdır...")
@@ -635,7 +667,6 @@ fun App(dao: ActivityDao) {
 
 
                                 }
-                                val reminderTitle = remember { mutableStateOf("") }
                                 if (type.value == "Reminder") {
                                     TextField(
                                         modifier = Modifier.fillMaxWidth(),

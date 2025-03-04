@@ -42,5 +42,6 @@ data class ActivityEntity(
     val date: String,
     val type: String,
     val enabled: Boolean,
+    val reminderTitle: String?,
     @PrimaryKey(autoGenerate = true)  val id: Int? = null
 )
