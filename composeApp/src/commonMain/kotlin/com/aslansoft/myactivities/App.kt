@@ -567,7 +567,7 @@ fun App(dao: ActivityDao) {
                                                         selectedDate = null
                                                     }
                                                     fieldState.value = !fieldState.value
-                                                }else if (reminderTitle.value.isEmpty()){
+                                                }else if (reminderTitle.value.isEmpty() && type.value == "Reminder"){
                                                     scope.launch {
                                                         snackbarHostState.showSnackbar("Hatırlatıcı için başlık zorunludur.")
                                                     }
@@ -709,6 +709,9 @@ fun App(dao: ActivityDao) {
 
                                 val tabs = listOf("Hatırlatıcı", "Aktivite")
                                 var selectedTabIndex by remember { mutableStateOf(0) }
+                                LaunchedEffect(selectedTabIndex){
+                                    type.value = if (selectedTabIndex == 0) "Reminder" else "TodoList"
+                                }
                                 TabRow(backgroundColor = Color(0, 48, 146),
                                     contentColor = Color.White,
                                     selectedTabIndex = selectedTabIndex,
